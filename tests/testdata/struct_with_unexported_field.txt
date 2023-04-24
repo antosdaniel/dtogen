@@ -1,0 +1,5 @@
+package testdata
+
+type WithUnexportedField struct {
+	A string
+}

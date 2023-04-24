@@ -1,0 +1,6 @@
+package testdata
+
+type StructWithSubType struct {
+	A       string
+	SubType StructWithSubType_SubType
+}
