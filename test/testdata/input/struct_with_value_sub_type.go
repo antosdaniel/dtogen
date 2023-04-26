@@ -1,7 +1,7 @@
-package testdata
+package input
 
 import (
-	"github.com/antosdaniel/dtogen/tests/testdata/value_type"
+	"github.com/antosdaniel/dtogen/test/testdata/value_type"
 )
 
 type StructWithValueSubType struct {

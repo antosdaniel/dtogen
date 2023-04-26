@@ -1,4 +1,4 @@
-package testdata
+package input
 
 type EnumIota int
 

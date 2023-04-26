@@ -1,4 +1,4 @@
-package testdata
+package input
 
 type StructWithBaseTypes struct {
 	Bool    bool

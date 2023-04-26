@@ -1,4 +1,4 @@
-package testdata
+package output
 
 type EnumString string
 

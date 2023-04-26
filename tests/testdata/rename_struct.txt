@@ -1,5 +1,0 @@
-package testdata
-
-type RenameStructToSomethingElse struct {
-	A string
-}

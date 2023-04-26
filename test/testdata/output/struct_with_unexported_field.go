@@ -1,6 +1,5 @@
-package testdata
+package output
 
 type WithUnexportedField struct {
 	A string
-	b int
 }

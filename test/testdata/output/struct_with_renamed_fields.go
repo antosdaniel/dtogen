@@ -1,7 +1,7 @@
-package testdata
+package output
 
 type StructWithRenamedFields struct {
 	A string
-	B int
-	C float64
+	X int
+	Y float64
 }
