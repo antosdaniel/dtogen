@@ -12,14 +12,25 @@ func TestScenarios(t *testing.T) {
 		result, err := internal.Generate(internal.Input{
 			PathToSource:           "./testdata/input/struct_with_base_types.go",
 			TypeName:               "StructWithBaseTypes",
-			RenameTypeTo:           "",
 			IncludeAllParsedFields: true,
-			Fields:                 nil,
 			OutputPackage:          "output",
 		})
 
 		if assert.NoError(t, err) {
 			assert.Equal(t, expected(t, "./testdata/output/struct_with_base_types.go"), result.String())
+		}
+	})
+	t.Run("rename struct", func(t *testing.T) {
+		result, err := internal.Generate(internal.Input{
+			PathToSource:           "./testdata/input/rename_struct.go",
+			TypeName:               "RenameStruct",
+			RenameTypeTo:           "RenameStructToSomethingElse",
+			IncludeAllParsedFields: true,
+			OutputPackage:          "output",
+		})
+
+		if assert.NoError(t, err) {
+			assert.Equal(t, expected(t, "./testdata/output/rename_struct.go"), result.String())
 		}
 	})
 }
