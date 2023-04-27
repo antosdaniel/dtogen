@@ -8,31 +8,51 @@ import (
 )
 
 func TestScenarios(t *testing.T) {
-	t.Run("struct with base types", func(t *testing.T) {
-		result, err := internal.Generate(internal.Input{
-			PathToSource:           "./testdata/input/struct_with_base_types.go",
-			TypeName:               "StructWithBaseTypes",
-			IncludeAllParsedFields: true,
-			OutputPackage:          "output",
-		})
+	testCases := []struct {
+		input    internal.Input
+		expected string
+	}{
+		{
+			input: internal.Input{
+				PathToSource:           "./testdata/input/struct_with_base_types.go",
+				TypeName:               "StructWithBaseTypes",
+				IncludeAllParsedFields: true,
+				OutputPackage:          "output",
+			},
+			expected: "./testdata/output/struct_with_base_types.go",
+		},
+		{
+			input: internal.Input{
+				PathToSource:           "./testdata/input/rename_struct.go",
+				TypeName:               "RenameStruct",
+				RenameTypeTo:           "RenameStructToSomethingElse",
+				IncludeAllParsedFields: true,
+				OutputPackage:          "output",
+			},
+			expected: "./testdata/output/rename_struct.go",
+		},
+		{
+			input: internal.Input{
+				PathToSource:           "./testdata/input/struct_with_renamed_fields.go",
+				TypeName:               "StructWithRenamedFields",
+				IncludeAllParsedFields: true,
+				Fields: []internal.FieldInput{
+					{Name: "B", RenameTo: "X"},
+					{Name: "C", RenameTo: "Y"},
+				},
+				OutputPackage: "output",
+			},
+			expected: "./testdata/output/struct_with_renamed_fields.go",
+		},
+	}
+
+	for _, testCase := range testCases {
+		result, err := internal.Generate(testCase.input)
 
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected(t, "./testdata/output/struct_with_base_types.go"), result.String())
+			assert.Equal(t, expected(t, testCase.expected), result.String())
 		}
-	})
-	t.Run("rename struct", func(t *testing.T) {
-		result, err := internal.Generate(internal.Input{
-			PathToSource:           "./testdata/input/rename_struct.go",
-			TypeName:               "RenameStruct",
-			RenameTypeTo:           "RenameStructToSomethingElse",
-			IncludeAllParsedFields: true,
-			OutputPackage:          "output",
-		})
-
-		if assert.NoError(t, err) {
-			assert.Equal(t, expected(t, "./testdata/output/rename_struct.go"), result.String())
-		}
-	})
+	}
 }
 
 func expected(t *testing.T, path string) string {
