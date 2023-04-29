@@ -14,17 +14,17 @@ func TestScenarios(t *testing.T) {
 		input    internal.Input
 	}{
 		{
-			testdata: "struct_with_base_types",
-			input: internal.Input{
-				TypeName:               "StructWithBaseTypes",
-				IncludeAllParsedFields: true,
-			},
-		},
-		{
 			testdata: "rename_struct",
 			input: internal.Input{
 				TypeName:               "RenameStruct",
 				RenameTypeTo:           "RenameStructToSomethingElse",
+				IncludeAllParsedFields: true,
+			},
+		},
+		{
+			testdata: "struct_with_base_types",
+			input: internal.Input{
+				TypeName:               "StructWithBaseTypes",
 				IncludeAllParsedFields: true,
 			},
 		},
@@ -37,6 +37,13 @@ func TestScenarios(t *testing.T) {
 					{Name: "B", RenameTo: "X"},
 					{Name: "C", RenameTo: "Y"},
 				},
+			},
+		},
+		{
+			testdata: "struct_with_unexported_field",
+			input: internal.Input{
+				TypeName:               "Struct",
+				IncludeAllParsedFields: true,
 			},
 		},
 	}

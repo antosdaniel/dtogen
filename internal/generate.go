@@ -4,6 +4,7 @@ import (
 	"github.com/antosdaniel/dtogen/internal/parser"
 	"github.com/antosdaniel/dtogen/internal/writer"
 	"go/ast"
+	"strings"
 )
 
 type Generated interface {
@@ -24,7 +25,7 @@ func Generate(input Input) (Generated, error) {
 	fieldsToWrite := writer.Fields{}
 	for _, f := range prepareFields(input.IncludeAllParsedFields, input.Fields, parsed.Fields) {
 		fieldsToWrite = append(fieldsToWrite, writer.Field{
-			Name: string(f.desiredName()),
+			Name: f.desiredName(),
 			Type: f.Type,
 		})
 	}
@@ -69,6 +70,10 @@ type field struct {
 func (f field) desiredName() string {
 	if f.RenameTo != "" {
 		return f.RenameTo
+	}
+
+	if !ast.IsExported(f.Name) {
+		return strings.ToUpper(f.Name[:1]) + f.Name[1:]
 	}
 
 	return f.Name

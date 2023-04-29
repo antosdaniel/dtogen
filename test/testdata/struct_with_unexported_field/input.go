@@ -1,6 +1,6 @@
 package struct_with_unexported_field
 
-type WithUnexportedField struct {
+type Struct struct {
 	A string
 	b int
 }
