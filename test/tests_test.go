@@ -1,6 +1,7 @@
 package test_test
 
 import (
+	"fmt"
 	"github.com/antosdaniel/dtogen/internal"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -9,48 +10,45 @@ import (
 
 func TestScenarios(t *testing.T) {
 	testCases := []struct {
+		testdata string
 		input    internal.Input
-		expected string
 	}{
 		{
+			testdata: "struct_with_base_types",
 			input: internal.Input{
-				PathToSource:           "./testdata/input/struct_with_base_types.go",
 				TypeName:               "StructWithBaseTypes",
 				IncludeAllParsedFields: true,
-				OutputPackage:          "output",
 			},
-			expected: "./testdata/output/struct_with_base_types.go",
 		},
 		{
+			testdata: "rename_struct",
 			input: internal.Input{
-				PathToSource:           "./testdata/input/rename_struct.go",
 				TypeName:               "RenameStruct",
 				RenameTypeTo:           "RenameStructToSomethingElse",
 				IncludeAllParsedFields: true,
-				OutputPackage:          "output",
 			},
-			expected: "./testdata/output/rename_struct.go",
 		},
 		{
+			testdata: "struct_with_renamed_fields",
 			input: internal.Input{
-				PathToSource:           "./testdata/input/struct_with_renamed_fields.go",
 				TypeName:               "StructWithRenamedFields",
 				IncludeAllParsedFields: true,
 				Fields: []internal.FieldInput{
 					{Name: "B", RenameTo: "X"},
 					{Name: "C", RenameTo: "Y"},
 				},
-				OutputPackage: "output",
 			},
-			expected: "./testdata/output/struct_with_renamed_fields.go",
 		},
 	}
 
 	for _, testCase := range testCases {
+		testCase.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", testCase.testdata)
+		testCase.input.OutputPackage = fmt.Sprintf("%s_test", testCase.testdata)
 		result, err := internal.Generate(testCase.input)
 
 		if assert.NoError(t, err) {
-			assert.Equal(t, expected(t, testCase.expected), result.String())
+			e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", testCase.testdata))
+			assert.Equal(t, e, result.String())
 		}
 	}
 }

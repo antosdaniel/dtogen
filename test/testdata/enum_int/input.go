@@ -1,4 +1,4 @@
-package output
+package enum_int
 
 type EnumInt int
 

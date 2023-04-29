@@ -1,4 +1,4 @@
-package output
+package struct_with_base_types_test
 
 type StructWithBaseTypes struct {
 	Bool       bool

@@ -1,4 +1,4 @@
-package input
+package enum_string
 
 type EnumString string
 

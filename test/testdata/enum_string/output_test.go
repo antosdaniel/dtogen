@@ -1,4 +1,4 @@
-package output
+package enum_string_test
 
 type EnumString string
 

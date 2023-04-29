@@ -1,4 +1,4 @@
-package input
+package enum_int_test
 
 type EnumInt int
 

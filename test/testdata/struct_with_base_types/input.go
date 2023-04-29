@@ -1,4 +1,4 @@
-package input
+package struct_with_base_types
 
 type StructWithBaseTypes struct {
 	Bool    bool

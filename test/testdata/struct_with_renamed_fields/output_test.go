@@ -1,4 +1,4 @@
-package output
+package struct_with_renamed_fields_test
 
 type StructWithRenamedFields struct {
 	A string

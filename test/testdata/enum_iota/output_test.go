@@ -1,4 +1,4 @@
-package output
+package enum_iota_test
 
 type EnumIota int
 

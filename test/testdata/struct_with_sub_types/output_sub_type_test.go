@@ -1,0 +1,3 @@
+package struct_with_sub_types_test
+
+type NonRegisteredValueType string
