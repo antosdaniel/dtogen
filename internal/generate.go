@@ -1,25 +1,23 @@
 package internal
 
 import (
-	"fmt"
+	"github.com/antosdaniel/dtogen/internal/parser"
 	"github.com/antosdaniel/dtogen/internal/writer"
+	"go/ast"
 )
-
-var (
-	ErrNameCanNotBeEmpty error = fmt.Errorf("name can not be empty")
-)
-
-type FieldName string
-type FieldType string
 
 type Generated interface {
 	String() string
 }
 
 func Generate(input Input) (Generated, error) {
-	parsed, err := Parse(input.PathToSource, input.TypeName)
+	p, err := parser.New(input.PathToSource)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse file %q: %w", input.PathToSource, err)
+		return nil, err
+	}
+	parsed, err := p.GetStruct(input.TypeName)
+	if err != nil {
+		return nil, err
 	}
 
 	// TODO: error on not found names
@@ -27,7 +25,7 @@ func Generate(input Input) (Generated, error) {
 	for _, f := range prepareFields(input.IncludeAllParsedFields, input.Fields, parsed.Fields) {
 		fieldsToWrite = append(fieldsToWrite, writer.Field{
 			Name: string(f.desiredName()),
-			Type: string(f.Type),
+			Type: f.Type,
 		})
 	}
 	w := writer.New()
@@ -42,7 +40,7 @@ func Generate(input Input) (Generated, error) {
 	return w, nil
 }
 
-func prepareFields(includeAllParsedFields bool, desiredFields FieldsInput, parsedFields ParsedFields) fields {
+func prepareFields(includeAllParsedFields bool, desiredFields FieldsInput, parsedFields parser.Fields) fields {
 	result := fields{}
 	for _, f := range parsedFields {
 		desired, found := desiredFields.findByOriginalName(f.Name)
@@ -63,12 +61,12 @@ func prepareFields(includeAllParsedFields bool, desiredFields FieldsInput, parse
 type fields []field
 
 type field struct {
-	Name     FieldName
-	RenameTo FieldName
-	Type     FieldType
+	Name     string
+	RenameTo string
+	Type     ast.Expr
 }
 
-func (f field) desiredName() FieldName {
+func (f field) desiredName() string {
 	if f.RenameTo != "" {
 		return f.RenameTo
 	}

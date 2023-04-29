@@ -2,6 +2,7 @@ package writer
 
 import (
 	"fmt"
+	"go/ast"
 	"strings"
 )
 
@@ -73,11 +74,9 @@ func (w *Writer) WriteStruct(s Struct) *Writer {
 	w.In()
 	col := typeShouldBeWrittenAtColumn(s.Fields)
 	for _, f := range s.Fields {
-		w.WriteLine(
-			f.Name +
-				strings.Repeat(" ", col-len(f.Name)) +
-				f.Type,
-		)
+		fieldType := writeType(f.Type)
+		space := strings.Repeat(" ", col-len(f.Name))
+		w.WriteLine(f.Name + space + fieldType)
 	}
 	w.Out()
 	w.WriteLine("}")
@@ -93,7 +92,7 @@ type Fields []Field
 
 type Field struct {
 	Name string
-	Type string
+	Type ast.Expr
 }
 
 func typeShouldBeWrittenAtColumn(fields Fields) int {
@@ -106,4 +105,15 @@ func typeShouldBeWrittenAtColumn(fields Fields) int {
 	}
 
 	return result + 1
+}
+
+func writeType(fieldType ast.Expr) string {
+	switch fieldType.(type) {
+	case *ast.Ident:
+		return fieldType.(*ast.Ident).Name
+	case *ast.StarExpr:
+		return "*" + fieldType.(*ast.StarExpr).X.(*ast.Ident).Name
+	default:
+		panic(fmt.Errorf("unsupported type: %T", fieldType))
+	}
 }

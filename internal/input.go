@@ -28,11 +28,11 @@ func (i Input) desiredTypeName() string {
 type FieldsInput []FieldInput
 
 type FieldInput struct {
-	Name     FieldName
-	RenameTo FieldName
+	Name     string
+	RenameTo string
 }
 
-func (fs FieldsInput) findByOriginalName(name FieldName) (FieldInput, bool) {
+func (fs FieldsInput) findByOriginalName(name string) (FieldInput, bool) {
 	for _, f := range fs {
 		if f.Name == name {
 			return f, true

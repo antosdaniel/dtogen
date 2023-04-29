@@ -42,14 +42,17 @@ func TestScenarios(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testCase.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", testCase.testdata)
-		testCase.input.OutputPackage = fmt.Sprintf("%s_test", testCase.testdata)
-		result, err := internal.Generate(testCase.input)
+		t.Run(testCase.testdata, func(t *testing.T) {
+			testCase.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", testCase.testdata)
+			testCase.input.OutputPackage = fmt.Sprintf("%s_test", testCase.testdata)
 
-		if assert.NoError(t, err) {
-			e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", testCase.testdata))
-			assert.Equal(t, e, result.String())
-		}
+			result, err := internal.Generate(testCase.input)
+
+			if assert.NoError(t, err) {
+				e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", testCase.testdata))
+				assert.Equal(t, e, result.String())
+			}
+		})
 	}
 }
 
