@@ -5,6 +5,34 @@ import (
 	"strings"
 )
 
+func determineUsedImports(_type ast.Expr, imports Imports) Imports {
+	expr := _type
+	// If it's a pointer, get underlying type
+	if star, ok := expr.(*ast.StarExpr); ok {
+		expr = star.X
+	}
+
+	// TODO: This is very much a simplification. It will not work with lists nor maps.
+	sel, ok := expr.(*ast.SelectorExpr)
+	if !ok {
+		return nil
+	}
+
+	result := Imports{}
+	for _, i := range imports {
+		// Can it be something else?
+		ident, ok := sel.X.(*ast.Ident)
+		if !ok {
+			continue
+		}
+		if i.UsedName() != ident.Name {
+			continue
+		}
+		result = append(result, i)
+	}
+	return result
+}
+
 type Imports []Import
 
 type Import struct {

@@ -19,9 +19,8 @@ type Input struct {
 
 	// If IncludeAllParsedFields is set to true, all fields, no matter if they are present in Fields, will be included.
 	IncludeAllParsedFields bool
-	// Fields Specifies which fields should be included in new DTO, and what they should be renamed to.
-	Fields          FieldsInput
-	RegisteredTypes RegisteredTypesInput
+	// Fields Specifies which fields should be included in new DTO. Each field can be renamed, or have override type.
+	Fields FieldsInput
 
 	// OutputPackage Name of a package that result DTO should belong to.
 	OutputPackage string
@@ -38,8 +37,9 @@ func (i Input) desiredTypeName() string {
 type FieldsInput []FieldInput
 
 type FieldInput struct {
-	Name     string
-	RenameTo string
+	Name           string
+	RenameTo       string
+	OverrideTypeTo string
 }
 
 func (fs FieldsInput) findByOriginalName(name string) (FieldInput, bool) {

@@ -8,38 +8,38 @@ import (
 	"strings"
 )
 
-// Writer Helps writing Go code.
-type Writer struct {
+// writer Helps writing Go code.
+type writer struct {
 	body string
 
 	currentIndent int
 }
 
-func New() *Writer {
-	return &Writer{
+func New() generator.Writer {
+	return &writer{
 		body:          "",
 		currentIndent: 0,
 	}
 }
 
 // String Returns written code.
-func (w *Writer) String() string {
+func (w *writer) String() string {
 	return w.body
 }
 
 // In Increases indentation. Next lines will be indented by one level (tab) more.
-func (w *Writer) In() {
+func (w *writer) In() {
 	w.currentIndent += 1
 }
 
 // Out Decreases indentation. Next lines will be indented by one level (tab) less.
-func (w *Writer) Out() {
+func (w *writer) Out() {
 	if w.currentIndent > 0 {
 		w.currentIndent -= 1
 	}
 }
 
-func (w *Writer) indent() string {
+func (w *writer) indent() string {
 	indent := ""
 	for i := 0; i < w.currentIndent; i++ {
 		indent += "\t"
@@ -47,11 +47,11 @@ func (w *Writer) indent() string {
 	return indent
 }
 
-func (w *Writer) Write(code string) {
+func (w *writer) Write(code string) {
 	w.body += w.indent() + code
 }
 
-func (w *Writer) WriteLine(code string) {
+func (w *writer) WriteLine(code string) {
 	if code == "" {
 		w.WriteEmptyLine()
 		return
@@ -59,15 +59,15 @@ func (w *Writer) WriteLine(code string) {
 	w.body += w.indent() + code + "\n"
 }
 
-func (w *Writer) WriteEmptyLine() {
+func (w *writer) WriteEmptyLine() {
 	w.body += "\n"
 }
 
-func (w *Writer) WritePackage(pkg string) {
+func (w *writer) WritePackage(pkg string) {
 	w.WriteLine(fmt.Sprintf("package %s", pkg))
 }
 
-func (w *Writer) WriteImports(imports generator.Imports) {
+func (w *writer) WriteImports(imports generator.Imports) {
 	if len(imports) == 0 {
 		return
 	}
@@ -99,12 +99,15 @@ func sortImports(imports generator.Imports) generator.Imports {
 	return imports
 }
 
-func (w *Writer) WriteStruct(structName string, fields generator.Fields) {
+func (w *writer) WriteStruct(structName string, fields generator.Fields) {
 	w.WriteLine(fmt.Sprintf("type %s struct {", structName))
 	w.In()
 	col := typeShouldBeWrittenAtColumn(fields)
 	for _, f := range fields {
-		fieldType := writeType(f.Type())
+		fieldType := f.OverrideTypeTo()
+		if fieldType == "" {
+			fieldType = writeType(f.Type())
+		}
 		space := strings.Repeat(" ", col-len(f.DesiredName()))
 		w.WriteLine(f.DesiredName() + space + fieldType)
 	}

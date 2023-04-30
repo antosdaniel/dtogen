@@ -4,21 +4,21 @@ import (
 	"fmt"
 	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
-	"go/parser"
+	goparser "go/parser"
 	"go/token"
 	"golang.org/x/tools/go/packages"
 )
 
-type Parser struct {
+type parser struct {
 	pkg  *packages.Package
 	file *ast.File
 }
 
-func New() *Parser {
-	return &Parser{}
+func New() generator.Parser {
+	return &parser{}
 }
 
-func (p *Parser) LoadPackage(importPath string) (generator.Parser, error) {
+func (p *parser) LoadPackage(importPath string) (generator.Parser, error) {
 	pkgs, err := packages.Load(&packages.Config{
 		Mode: packages.NeedSyntax | packages.NeedTypes | packages.NeedImports,
 	}, importPath)
@@ -29,22 +29,22 @@ func (p *Parser) LoadPackage(importPath string) (generator.Parser, error) {
 		return nil, fmt.Errorf("package not found: %q", importPath)
 	}
 
-	return &Parser{pkg: pkgs[0]}, nil
+	return &parser{pkg: pkgs[0]}, nil
 }
 
-func (p *Parser) LoadFile(filePath string) (generator.Parser, error) {
+func (p *parser) LoadFile(filePath string) (generator.Parser, error) {
 	fileSet := token.NewFileSet()
-	file, err := parser.ParseFile(fileSet, filePath, nil, 0)
+	file, err := goparser.ParseFile(fileSet, filePath, nil, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	return &Parser{file: file}, nil
+	return &parser{file: file}, nil
 }
 
 // TODO: Refactor to FileParser and PackageParser, so we don't have to check both.
 
-func (p *Parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
+func (p *parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
 	if p.pkg != nil {
 		parsed, err := parseStructFromPkg(p.pkg, typeName)
 		if err != nil {

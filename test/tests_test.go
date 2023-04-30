@@ -29,6 +29,18 @@ func TestScenarios(t *testing.T) {
 			},
 		},
 		{
+			testdata: "struct_with_override_type",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				Fields: generator.FieldsInput{
+					{
+						Name:           "Policy",
+						OverrideTypeTo: "PolicyDTO",
+					},
+				},
+			},
+		},
+		{
 			testdata: "struct_with_renamed_fields",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
@@ -42,12 +54,6 @@ func TestScenarios(t *testing.T) {
 			testdata: "struct_with_sub_types",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
-				RegisteredTypes: []generator.RegisteredTypeInput{
-					{
-						ImportPath: "github.com/antosdaniel/dtogen/test/testdata/_misc",
-						TypeName:   "RegisteredType",
-					},
-				},
 			},
 		},
 		{

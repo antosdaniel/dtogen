@@ -14,6 +14,5 @@ type DTO struct {
 	MyTime mytime.Time
 
 	// Custom types
-	RegisteredValueType    _misc.RegisteredType
-	NonRegisteredValueType _misc.NonRegisteredType
+	CustomType    _misc.CustomType
 }

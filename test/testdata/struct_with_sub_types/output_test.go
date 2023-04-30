@@ -8,9 +8,8 @@ import (
 )
 
 type DTO struct {
-	Buffer                 bytes.Buffer
-	Time                   *time.Time
-	MyTime                 mytime.Time
-	RegisteredValueType    _misc.RegisteredType
-	NonRegisteredValueType _misc.NonRegisteredType
+	Buffer     bytes.Buffer
+	Time       *time.Time
+	MyTime     mytime.Time
+	CustomType _misc.CustomType
 }

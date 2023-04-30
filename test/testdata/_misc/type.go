@@ -1,13 +1,18 @@
 package _misc
 
-// RegisteredType Example custom type, which should be used as-is on generated DTOs.
-type RegisteredType struct {
+import "time"
+
+type CustomType struct {
 	Foo string
 	Bar string
 }
 
-// NonRegisteredType Example custom type, which will be assumed to exist in destination package.
-type NonRegisteredType struct {
-	Foo string
-	Bar string
+type Policy struct {
+	ID     string
+	Name   string
+	Author string
+
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time
 }

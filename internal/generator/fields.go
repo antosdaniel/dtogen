@@ -18,52 +18,31 @@ func prepareFields(
 			continue
 		}
 
+		var usedImports Imports
+		if desired.OverrideTypeTo == "" {
+			usedImports = determineUsedImports(f.Type(), imports)
+		}
+
 		result = append(result, Field{
-			name:     f.Name(),
-			renameTo: desired.RenameTo,
-			_type:    f.Type(),
-			imports:  determineUsedImports(f.Type(), imports),
+			name:         f.Name(),
+			renameTo:     desired.RenameTo,
+			_type:        f.Type(),
+			overrideType: desired.OverrideTypeTo,
+			imports:      usedImports,
 		})
 	}
 
 	return result
 }
 
-func determineUsedImports(_type ast.Expr, imports Imports) Imports {
-	expr := _type
-	// If it's a pointer, get underlying type
-	if star, ok := expr.(*ast.StarExpr); ok {
-		expr = star.X
-	}
-
-	sel, ok := expr.(*ast.SelectorExpr)
-	// TODO: revisit with lists/maps
-	if !ok {
-		return nil
-	}
-
-	result := Imports{}
-	for _, i := range imports {
-		// Can it be something else?
-		ident, ok := sel.X.(*ast.Ident)
-		if !ok {
-			continue
-		}
-		if i.UsedName() != ident.Name {
-			continue
-		}
-		result = append(result, i)
-	}
-	return result
-}
-
 type Fields []Field
 
 type Field struct {
-	name     string
-	renameTo string
-	_type    ast.Expr
-	imports  Imports
+	name         string
+	renameTo     string
+	_type        ast.Expr
+	overrideType string
+	imports      Imports
 }
 
 func (fs Fields) RequiredImports() Imports {
@@ -81,6 +60,10 @@ func (fs Fields) RequiredImports() Imports {
 
 func (f Field) Type() ast.Expr {
 	return f._type
+}
+
+func (f Field) OverrideTypeTo() string {
+	return f.overrideType
 }
 
 func (f Field) DesiredName() string {
