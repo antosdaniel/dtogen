@@ -61,7 +61,7 @@ func TestScenarios(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.testdata, func(t *testing.T) {
 			tc.input.TypeName = "DTO"
-			tc.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", tc.testdata)
+			tc.input.FilePath = fmt.Sprintf("./testdata/%s/input.go", tc.testdata)
 			tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
 			g := generator.New(parser.New(), writer.New())
 

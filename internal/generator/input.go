@@ -1,8 +1,17 @@
 package generator
 
+// Input
+//
+// Required:
+// - PackagePath or FilePath. PackagePath takes priority if both are present.
+// - TypeName
+// - IncludeAllParsedFields or Fields. Both can be present, if you want to include all fields, and rename some of them.
+// - OutputPackage
 type Input struct {
-	// PathToSource Import path to package in which DTO is present.
-	PathToSource string
+	// PackagePath Import path to package in which DTO is present.
+	PackagePath string
+	// FilePath Import path to file in which DTO is present.
+	FilePath string
 	// TypeName Name of DTO in the source.
 	TypeName string
 	// RenameTypeTo Desired name of a DTO. If empty, original name will be used.

@@ -2,6 +2,7 @@ package generator
 
 type Parser interface {
 	LoadPackage(importPath string) (Parser, error)
+	LoadFile(filePath string) (Parser, error)
 	GetStruct(typeName string) (*ParsedStruct, error)
 }
 

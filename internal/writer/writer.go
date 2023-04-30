@@ -112,6 +112,7 @@ func (w *Writer) WriteStruct(structName string, fields generator.Fields) {
 	w.WriteLine("}")
 }
 
+// typeShouldBeWrittenAtColumn Finds column to write types at, so they are aligned.
 func typeShouldBeWrittenAtColumn(fields generator.Fields) int {
 	result := 0
 	for _, f := range fields {

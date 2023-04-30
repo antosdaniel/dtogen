@@ -9,6 +9,7 @@ type ParsedStruct struct {
 }
 
 type ParsedFields []ParsedField
+
 type ParsedField struct {
 	name  string
 	_type ast.Expr

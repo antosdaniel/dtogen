@@ -13,7 +13,7 @@ func New(parser Parser, writer Writer) *Generator {
 }
 
 func (g *Generator) Generate(input Input) (Generated, error) {
-	p, err := g.parser.LoadPackage(input.PathToSource)
+	p, err := g.parser.LoadFile(input.FilePath)
 	if err != nil {
 		return nil, err
 	}

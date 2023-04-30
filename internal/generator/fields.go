@@ -58,11 +58,25 @@ func determineUsedImports(_type ast.Expr, imports Imports) Imports {
 }
 
 type Fields []Field
+
 type Field struct {
 	name     string
 	renameTo string
 	_type    ast.Expr
 	imports  Imports
+}
+
+func (fs Fields) RequiredImports() Imports {
+	result := Imports{}
+	for _, f := range fs {
+		for _, i := range f.imports {
+			if !result.Has(i) {
+				result = append(result, i)
+			}
+		}
+	}
+
+	return result
 }
 
 func (f Field) Type() ast.Expr {
@@ -79,17 +93,4 @@ func (f Field) DesiredName() string {
 	}
 
 	return f.name
-}
-
-func (fs Fields) RequiredImports() Imports {
-	result := Imports{}
-	for _, f := range fs {
-		for _, i := range f.imports {
-			if !result.Has(i) {
-				result = append(result, i)
-			}
-		}
-	}
-
-	return result
 }
