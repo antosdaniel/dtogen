@@ -13,7 +13,7 @@ func New(parser Parser, writer Writer) *Generator {
 }
 
 func (g *Generator) Generate(input Input) (Generated, error) {
-	p, err := g.parser.LoadFile(input.FilePath)
+	p, err := g.parser.LoadPackage(input.PackagePath)
 	if err != nil {
 		return nil, err
 	}
@@ -25,6 +25,10 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 	// TODO: error on not found names
 	fields := prepareFields(input.IncludeAllParsedFields, input.Fields, parsed.Fields, parsed.Imports)
 	imports := fields.RequiredImports()
+	// If we are generating mapper, then we will need to import source package.
+	if input.generateMapper() {
+		imports = append(imports, parsed.Package.ToImport())
+	}
 
 	g.writer.WritePackage(input.OutputPackage)
 	g.writer.WriteEmptyLine()
@@ -33,6 +37,24 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 		g.writer.WriteEmptyLine()
 	}
 	g.writer.WriteStruct(input.desiredTypeName(), fields)
+	if input.generateMapper() {
+		g.writer.WriteEmptyLine()
+		g.writer.WriteMapper(Mapper{
+			FromTypeName:   parsed.Name,
+			FromImportName: parsed.Package.name,
+			ToTypeName:     input.desiredTypeName(),
+			Fields:         fields,
+		})
+	}
 
 	return g.writer, nil
+}
+
+type Mapper struct {
+	FromTypeName   string
+	FromImportName string
+
+	ToTypeName string
+
+	Fields Fields
 }

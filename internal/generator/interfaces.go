@@ -2,7 +2,6 @@ package generator
 
 type Parser interface {
 	LoadPackage(importPath string) (Parser, error)
-	LoadFile(filePath string) (Parser, error)
 	GetStruct(typeName string) (*ParsedStruct, error)
 }
 
@@ -16,6 +15,7 @@ type Writer interface {
 	WritePackage(pkg string)
 	WriteImports(imports Imports)
 	WriteStruct(structName string, fields Fields)
+	WriteMapper(mapper Mapper)
 }
 
 type Generated interface {

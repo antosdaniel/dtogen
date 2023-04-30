@@ -102,7 +102,7 @@ func sortImports(imports generator.Imports) generator.Imports {
 func (w *writer) WriteStruct(structName string, fields generator.Fields) {
 	w.WriteLine(fmt.Sprintf("type %s struct {", structName))
 	w.In()
-	col := typeShouldBeWrittenAtColumn(fields)
+	col := longestFieldNameLength(fields) + 1
 	for _, f := range fields {
 		fieldType := f.OverrideTypeTo()
 		if fieldType == "" {
@@ -113,19 +113,6 @@ func (w *writer) WriteStruct(structName string, fields generator.Fields) {
 	}
 	w.Out()
 	w.WriteLine("}")
-}
-
-// typeShouldBeWrittenAtColumn Finds column to write types at, so they are aligned.
-func typeShouldBeWrittenAtColumn(fields generator.Fields) int {
-	result := 0
-	for _, f := range fields {
-		l := len(f.DesiredName())
-		if l > result {
-			result = l
-		}
-	}
-
-	return result + 1
 }
 
 func writeType(fieldType ast.Expr) string {
@@ -140,4 +127,49 @@ func writeType(fieldType ast.Expr) string {
 	default:
 		panic(fmt.Errorf("unsupported type: %T", fieldType))
 	}
+}
+
+/*
+func NewDTO(src struct_with_mappers.Input) DTO {
+	return DTO{
+		ID:        src.ID,
+		Metadata:  src.Metadata,
+		CreatedAt: src.CreatedAt,
+		DeletedAt: src.DeletedAt,
+	}
+}
+*/
+
+func (w *writer) WriteMapper(mapper generator.Mapper) {
+	w.WriteLine(fmt.Sprintf(
+		"func New%s(src %s.%s) %s {",
+		mapper.ToTypeName,
+		mapper.FromImportName,
+		mapper.FromTypeName,
+		mapper.ToTypeName,
+	))
+	w.In()
+	w.WriteLine(fmt.Sprintf("return %s{", mapper.ToTypeName))
+	w.In()
+	col := longestFieldNameLength(mapper.Fields) + 1
+	for _, f := range mapper.Fields {
+		space := strings.Repeat(" ", col-len(f.DesiredName()))
+		w.WriteLine(fmt.Sprintf("%s:%ssrc.%s,", f.DesiredName(), space, f.OriginalName()))
+	}
+	w.Out()
+	w.WriteLine("}")
+	w.Out()
+	w.WriteLine("}")
+}
+
+func longestFieldNameLength(fields generator.Fields) int {
+	result := 0
+	for _, f := range fields {
+		l := len(f.DesiredName())
+		if l > result {
+			result = l
+		}
+	}
+
+	return result
 }

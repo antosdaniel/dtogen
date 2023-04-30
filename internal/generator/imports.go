@@ -50,10 +50,17 @@ func NewImport(i *ast.ImportSpec) Import {
 		result.alias = i.Name.Name
 	}
 
-	parts := strings.Split(result.path, "/")
-	result.name = parts[len(parts)-1]
+	result.name = getPackageName(result.path)
 
 	return result
+}
+
+func getPackageName(path string) string {
+	parts := strings.Split(path, "/")
+	if len(parts) == 0 {
+		return ""
+	}
+	return parts[len(parts)-1]
 }
 
 func (is Imports) Has(_import Import) bool {

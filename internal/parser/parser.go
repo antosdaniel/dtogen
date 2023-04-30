@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
-	goparser "go/parser"
-	"go/token"
 	"golang.org/x/tools/go/packages"
 )
 
 type parser struct {
-	pkg  *packages.Package
-	file *ast.File
+	pkg *packages.Package
 }
 
 func New() generator.Parser {
@@ -32,43 +29,19 @@ func (p *parser) LoadPackage(importPath string) (generator.Parser, error) {
 	return &parser{pkg: pkgs[0]}, nil
 }
 
-func (p *parser) LoadFile(filePath string) (generator.Parser, error) {
-	fileSet := token.NewFileSet()
-	file, err := goparser.ParseFile(fileSet, filePath, nil, 0)
+func (p *parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
+	if p.pkg == nil {
+		return nil, fmt.Errorf("load package first")
+	}
+
+	parsed, err := parseStructFromPkg(p.pkg, typeName)
 	if err != nil {
 		return nil, err
 	}
-
-	return &parser{file: file}, nil
-}
-
-// TODO: Refactor to FileParser and PackageParser, so we don't have to check both.
-
-func (p *parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
-	if p.pkg != nil {
-		parsed, err := parseStructFromPkg(p.pkg, typeName)
-		if err != nil {
-			return nil, err
-		}
-		if parsed != nil {
-			return parsed, nil
-		}
-
-		return nil, fmt.Errorf("type not found: %q", typeName)
+	if parsed != nil {
+		return parsed, nil
 	}
-	if p.file != nil {
-		parsed, err := parseStructFromFile(p.file, typeName)
-		if err != nil {
-			return nil, err
-		}
-		if parsed != nil {
-			return parsed, nil
-		}
-
-		return nil, fmt.Errorf("type not found: %q", typeName)
-	}
-
-	return nil, fmt.Errorf("package nor file loaded")
+	return nil, fmt.Errorf("type not found: %q", typeName)
 }
 
 func parseStructFromPkg(pkg *packages.Package, typeName string) (*generator.ParsedStruct, error) {
@@ -78,6 +51,7 @@ func parseStructFromPkg(pkg *packages.Package, typeName string) (*generator.Pars
 			return nil, err
 		}
 		if parsed != nil {
+			parsed.Package = generator.NewPackage(pkg.Types.Path(), pkg.Types.Name())
 			return parsed, nil
 		}
 	}

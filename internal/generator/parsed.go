@@ -6,6 +6,7 @@ type ParsedStruct struct {
 	Name    string
 	Fields  ParsedFields
 	Imports Imports
+	Package Package
 }
 
 type ParsedFields []ParsedField
@@ -25,4 +26,23 @@ func (f ParsedField) Name() string {
 
 func (f ParsedField) Type() ast.Expr {
 	return f._type
+}
+
+type Package struct {
+	path string
+	name string
+}
+
+func NewPackage(path, name string) Package {
+	return Package{
+		path: path,
+		name: name,
+	}
+}
+
+func (p Package) ToImport() Import {
+	return Import{
+		path: p.path,
+		name: p.name,
+	}
 }

@@ -66,6 +66,11 @@ func (f Field) OverrideTypeTo() string {
 	return f.overrideType
 }
 
+// OriginalName Returns name of a field as it was parsed from source.
+func (f Field) OriginalName() string {
+	return f.name
+}
+
 func (f Field) DesiredName() string {
 	if f.renameTo != "" {
 		return f.renameTo

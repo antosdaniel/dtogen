@@ -19,6 +19,14 @@ func TestScenarios(t *testing.T) {
 			testdata: "struct_with_base_types",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
+				SkipMapper:             true,
+			},
+		},
+		{
+			testdata: "struct_with_mappers",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				SkipMapper:             false,
 			},
 		},
 		{
@@ -31,6 +39,7 @@ func TestScenarios(t *testing.T) {
 						OverrideTypeTo: "PolicyDTO",
 					},
 				},
+				SkipMapper: true,
 			},
 		},
 		{
@@ -41,18 +50,21 @@ func TestScenarios(t *testing.T) {
 					{Name: "B", RenameTo: "X"},
 					{Name: "C", RenameTo: "Y"},
 				},
+				SkipMapper: true,
 			},
 		},
 		{
 			testdata: "struct_with_sub_types",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
+				SkipMapper:             true,
 			},
 		},
 		{
 			testdata: "struct_with_unexported_field",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
+				SkipMapper:             true,
 			},
 		},
 	}
@@ -61,7 +73,7 @@ func TestScenarios(t *testing.T) {
 		t.Run(tc.testdata, func(t *testing.T) {
 			tc.input.TypeName = "Input"
 			tc.input.RenameTypeTo = "DTO"
-			tc.input.FilePath = fmt.Sprintf("./testdata/%s/input.go", tc.testdata)
+			tc.input.PackagePath = fmt.Sprintf("./testdata/%s", tc.testdata)
 			tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
 			g := generator.New(parser.New(), writer.New())
 
