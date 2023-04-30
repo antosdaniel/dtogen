@@ -7,12 +7,12 @@ import (
 	mytime "time"
 )
 
-type DTO struct {
+type Input struct {
 	// Some system types as registered by default
 	Buffer bytes.Buffer
 	Time   *time.Time
 	MyTime mytime.Time
 
 	// Custom types
-	CustomType    _misc.CustomType
+	CustomType _misc.CustomType
 }

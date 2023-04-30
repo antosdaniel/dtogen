@@ -16,13 +16,6 @@ func TestScenarios(t *testing.T) {
 		input    generator.Input
 	}{
 		{
-			testdata: "rename_struct",
-			input: generator.Input{
-				RenameTypeTo:           "RenamedDTO",
-				IncludeAllParsedFields: true,
-			},
-		},
-		{
 			testdata: "struct_with_base_types",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
@@ -66,7 +59,8 @@ func TestScenarios(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.testdata, func(t *testing.T) {
-			tc.input.TypeName = "DTO"
+			tc.input.TypeName = "Input"
+			tc.input.RenameTypeTo = "DTO"
 			tc.input.FilePath = fmt.Sprintf("./testdata/%s/input.go", tc.testdata)
 			tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
 			g := generator.New(parser.New(), writer.New())

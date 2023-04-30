@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type DTO struct {
+type Input struct {
 	ID        string
 	Name      string
 	Policy    _misc.CustomType

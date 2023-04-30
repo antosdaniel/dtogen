@@ -1,6 +1,6 @@
 package struct_with_base_types
 
-type DTO struct {
+type Input struct {
 	Bool    bool
 	PtrBool *bool
 
