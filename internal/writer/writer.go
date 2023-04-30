@@ -2,7 +2,9 @@ package writer
 
 import (
 	"fmt"
+	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
+	"sort"
 	"strings"
 )
 
@@ -26,17 +28,15 @@ func (w *Writer) String() string {
 }
 
 // In Increases indentation. Next lines will be indented by one level (tab) more.
-func (w *Writer) In() *Writer {
+func (w *Writer) In() {
 	w.currentIndent += 1
-	return w
 }
 
 // Out Decreases indentation. Next lines will be indented by one level (tab) less.
-func (w *Writer) Out() *Writer {
+func (w *Writer) Out() {
 	if w.currentIndent > 0 {
 		w.currentIndent -= 1
 	}
-	return w
 }
 
 func (w *Writer) indent() string {
@@ -47,58 +47,75 @@ func (w *Writer) indent() string {
 	return indent
 }
 
-func (w *Writer) Write(code string) *Writer {
+func (w *Writer) Write(code string) {
 	w.body += w.indent() + code
-	return w
 }
 
-func (w *Writer) WriteLine(code string) *Writer {
+func (w *Writer) WriteLine(code string) {
 	if code == "" {
-		return w.WriteEmptyLine()
+		w.WriteEmptyLine()
+		return
 	}
 	w.body += w.indent() + code + "\n"
-	return w
 }
 
-func (w *Writer) WriteEmptyLine() *Writer {
+func (w *Writer) WriteEmptyLine() {
 	w.body += "\n"
-	return w
 }
 
-func (w *Writer) WritePackage(pkg string) *Writer {
-	return w.WriteLine(fmt.Sprintf("package %s", pkg))
+func (w *Writer) WritePackage(pkg string) {
+	w.WriteLine(fmt.Sprintf("package %s", pkg))
 }
 
-func (w *Writer) WriteStruct(s Struct) *Writer {
-	w.WriteLine(fmt.Sprintf("type %s struct {", s.Name))
+func (w *Writer) WriteImports(imports generator.Imports) {
+	if len(imports) == 0 {
+		return
+	}
+
+	w.WriteLine("import (")
 	w.In()
-	col := typeShouldBeWrittenAtColumn(s.Fields)
-	for _, f := range s.Fields {
-		fieldType := writeType(f.Type)
-		space := strings.Repeat(" ", col-len(f.Name))
-		w.WriteLine(f.Name + space + fieldType)
+	for _, i := range sortImports(imports) {
+		if i.Alias() != "" {
+			w.WriteLine(fmt.Sprintf("%s %q", i.Alias(), i.Path()))
+		} else {
+			w.WriteLine(fmt.Sprintf("%q", i.Path()))
+		}
+	}
+	w.Out()
+	w.WriteLine(")")
+}
+
+func sortImports(imports generator.Imports) generator.Imports {
+	sort.Slice(imports, func(i, j int) bool {
+		// First sort by path A-Z
+		if imports[i].Path() != imports[j].Path() {
+			return imports[i].Path() < imports[j].Path()
+		}
+
+		// Then sort by aliases A-Z
+		return imports[i].Alias() < imports[j].Alias()
+	})
+
+	return imports
+}
+
+func (w *Writer) WriteStruct(structName string, fields generator.Fields) {
+	w.WriteLine(fmt.Sprintf("type %s struct {", structName))
+	w.In()
+	col := typeShouldBeWrittenAtColumn(fields)
+	for _, f := range fields {
+		fieldType := writeType(f.Type())
+		space := strings.Repeat(" ", col-len(f.DesiredName()))
+		w.WriteLine(f.DesiredName() + space + fieldType)
 	}
 	w.Out()
 	w.WriteLine("}")
-	return w
 }
 
-type Struct struct {
-	Name   string
-	Fields Fields
-}
-
-type Fields []Field
-
-type Field struct {
-	Name string
-	Type ast.Expr
-}
-
-func typeShouldBeWrittenAtColumn(fields Fields) int {
+func typeShouldBeWrittenAtColumn(fields generator.Fields) int {
 	result := 0
 	for _, f := range fields {
-		l := len(f.Name)
+		l := len(f.DesiredName())
 		if l > result {
 			result = l
 		}
@@ -112,7 +129,10 @@ func writeType(fieldType ast.Expr) string {
 	case *ast.Ident:
 		return fieldType.(*ast.Ident).Name
 	case *ast.StarExpr:
-		return "*" + fieldType.(*ast.StarExpr).X.(*ast.Ident).Name
+		return "*" + writeType(fieldType.(*ast.StarExpr).X)
+	case *ast.SelectorExpr:
+		sel := fieldType.(*ast.SelectorExpr)
+		return writeType(sel.X) + "." + sel.Sel.Name
 	default:
 		panic(fmt.Errorf("unsupported type: %T", fieldType))
 	}

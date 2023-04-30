@@ -1,6 +1,6 @@
 package struct_with_unexported_field
 
-type Struct struct {
+type DTO struct {
 	A string
 	b int
 }

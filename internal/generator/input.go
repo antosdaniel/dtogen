@@ -1,7 +1,7 @@
-package internal
+package generator
 
 type Input struct {
-	// PathToSource Path to file in which DTO is present.
+	// PathToSource Import path to package in which DTO is present.
 	PathToSource string
 	// TypeName Name of DTO in the source.
 	TypeName string
@@ -11,7 +11,8 @@ type Input struct {
 	// If IncludeAllParsedFields is set to true, all fields, no matter if they are present in Fields, will be included.
 	IncludeAllParsedFields bool
 	// Fields Specifies which fields should be included in new DTO, and what they should be renamed to.
-	Fields FieldsInput
+	Fields          FieldsInput
+	RegisteredTypes RegisteredTypesInput
 
 	// OutputPackage Name of a package that result DTO should belong to.
 	OutputPackage string
@@ -40,4 +41,11 @@ func (fs FieldsInput) findByOriginalName(name string) (FieldInput, bool) {
 	}
 
 	return FieldInput{}, false
+}
+
+type RegisteredTypesInput []RegisteredTypeInput
+
+type RegisteredTypeInput struct {
+	ImportPath string
+	TypeName   string
 }

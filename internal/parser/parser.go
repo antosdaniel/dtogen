@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
 	"golang.org/x/tools/go/packages"
 )
@@ -10,7 +11,11 @@ type Parser struct {
 	pkg *packages.Package
 }
 
-func New(importPath string) (*Parser, error) {
+func New() *Parser {
+	return &Parser{}
+}
+
+func (p *Parser) LoadPackage(importPath string) (generator.Parser, error) {
 	pkgs, err := packages.Load(&packages.Config{
 		Mode: packages.NeedSyntax | packages.NeedTypes | packages.NeedImports,
 	}, importPath)
@@ -24,9 +29,13 @@ func New(importPath string) (*Parser, error) {
 	return &Parser{pkg: pkgs[0]}, nil
 }
 
-func (p *Parser) GetStruct(typeName string) (*Struct, error) {
-	for _, s := range p.pkg.Syntax {
-		for _, d := range s.Decls {
+func (p *Parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
+	if p.pkg == nil {
+		return nil, fmt.Errorf("no package loaded")
+	}
+
+	for _, file := range p.pkg.Syntax {
+		for _, d := range file.Decls {
 			genDecl, ok := d.(*ast.GenDecl)
 			if !ok {
 				continue
@@ -44,7 +53,7 @@ func (p *Parser) GetStruct(typeName string) (*Struct, error) {
 				switch typeSpec.Type.(type) {
 				case *ast.StructType:
 					t := typeSpec.Type.(*ast.StructType)
-					return parseStruct(t, typeName)
+					return parseStruct(t, typeName, file)
 				default:
 					return nil, fmt.Errorf(
 						"specified declaration is not a struct: %T", typeSpec.Type,
@@ -57,32 +66,23 @@ func (p *Parser) GetStruct(typeName string) (*Struct, error) {
 	return nil, fmt.Errorf("type not found: %q", typeName)
 }
 
-func parseStruct(structType *ast.StructType, typeName string) (*Struct, error) {
-	result := &Struct{
-		Name:   typeName,
-		Fields: Fields{},
+func parseStruct(structType *ast.StructType, typeName string, file *ast.File) (*generator.ParsedStruct, error) {
+	imports := make(generator.Imports, len(file.Imports))
+	for _, i := range file.Imports {
+		imports = append(imports, generator.NewImport(i))
+	}
+
+	result := &generator.ParsedStruct{
+		Name:    typeName,
+		Imports: imports,
+		Fields:  generator.ParsedFields{},
 	}
 
 	for _, field := range structType.Fields.List {
 		for _, name := range field.Names {
-			result.Fields = append(result.Fields, Field{
-				Name: name.Name,
-				Type: field.Type,
-			})
+			result.Fields = append(result.Fields, generator.NewParsedField(name.Name, field.Type))
 		}
 	}
 
 	return result, nil
-}
-
-type Struct struct {
-	Name   string
-	Fields Fields
-}
-
-type Fields []Field
-
-type Field struct {
-	Name string
-	Type ast.Expr
 }

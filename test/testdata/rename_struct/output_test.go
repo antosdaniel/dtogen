@@ -1,5 +1,5 @@
 package rename_struct_test
 
-type RenameStructToSomethingElse struct {
+type RenamedDTO struct {
 	A string
 }

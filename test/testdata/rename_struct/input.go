@@ -1,5 +1,5 @@
 package rename_struct
 
-type RenameStruct struct {
+type DTO struct {
 	A string
 }

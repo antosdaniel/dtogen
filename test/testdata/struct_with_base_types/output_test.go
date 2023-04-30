@@ -1,6 +1,6 @@
 package struct_with_base_types_test
 
-type StructWithBaseTypes struct {
+type DTO struct {
 	Bool       bool
 	PtrBool    *bool
 	String     string

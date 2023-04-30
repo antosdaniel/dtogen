@@ -1,13 +1,13 @@
 package _misc
 
-// RegisteredValueType Example custom type, which should be used as-is on generated DTOs.
-type RegisteredValueType struct {
+// RegisteredType Example custom type, which should be used as-is on generated DTOs.
+type RegisteredType struct {
 	Foo string
 	Bar string
 }
 
-// NonRegisteredValueType Example custom type, which will be assumed to exist in destination package.
-type NonRegisteredValueType struct {
+// NonRegisteredType Example custom type, which will be assumed to exist in destination package.
+type NonRegisteredType struct {
 	Foo string
 	Bar string
 }

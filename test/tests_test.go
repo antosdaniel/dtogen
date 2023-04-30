@@ -2,7 +2,9 @@ package test_test
 
 import (
 	"fmt"
-	"github.com/antosdaniel/dtogen/internal"
+	"github.com/antosdaniel/dtogen/internal/generator"
+	"github.com/antosdaniel/dtogen/internal/parser"
+	"github.com/antosdaniel/dtogen/internal/writer"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -11,52 +13,62 @@ import (
 func TestScenarios(t *testing.T) {
 	testCases := []struct {
 		testdata string
-		input    internal.Input
+		input    generator.Input
 	}{
 		{
 			testdata: "rename_struct",
-			input: internal.Input{
-				TypeName:               "RenameStruct",
-				RenameTypeTo:           "RenameStructToSomethingElse",
+			input: generator.Input{
+				RenameTypeTo:           "RenamedDTO",
 				IncludeAllParsedFields: true,
 			},
 		},
 		{
 			testdata: "struct_with_base_types",
-			input: internal.Input{
-				TypeName:               "StructWithBaseTypes",
+			input: generator.Input{
 				IncludeAllParsedFields: true,
 			},
 		},
 		{
 			testdata: "struct_with_renamed_fields",
-			input: internal.Input{
-				TypeName:               "StructWithRenamedFields",
+			input: generator.Input{
 				IncludeAllParsedFields: true,
-				Fields: []internal.FieldInput{
+				Fields: []generator.FieldInput{
 					{Name: "B", RenameTo: "X"},
 					{Name: "C", RenameTo: "Y"},
 				},
 			},
 		},
 		{
+			testdata: "struct_with_sub_types",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				RegisteredTypes: []generator.RegisteredTypeInput{
+					{
+						ImportPath: "github.com/antosdaniel/dtogen/test/testdata/_misc",
+						TypeName:   "RegisteredType",
+					},
+				},
+			},
+		},
+		{
 			testdata: "struct_with_unexported_field",
-			input: internal.Input{
-				TypeName:               "Struct",
+			input: generator.Input{
 				IncludeAllParsedFields: true,
 			},
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.testdata, func(t *testing.T) {
-			testCase.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", testCase.testdata)
-			testCase.input.OutputPackage = fmt.Sprintf("%s_test", testCase.testdata)
+	for _, tc := range testCases {
+		t.Run(tc.testdata, func(t *testing.T) {
+			tc.input.TypeName = "DTO"
+			tc.input.PathToSource = fmt.Sprintf("./testdata/%s/input.go", tc.testdata)
+			tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
+			g := generator.New(parser.New(), writer.New())
 
-			result, err := internal.Generate(testCase.input)
+			result, err := g.Generate(tc.input)
 
 			if assert.NoError(t, err) {
-				e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", testCase.testdata))
+				e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", tc.testdata))
 				assert.Equal(t, e, result.String())
 			}
 		})
