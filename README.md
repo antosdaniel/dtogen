@@ -1,1 +1,1 @@
-# dtogen [![Tests](https://github.com/antosdaniel/dtogen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions)
+# dtogen [![Tests](https://github.com/antosdaniel/dtogen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions) [![Security](https://github.com/antosdaniel/dtogen/actions/workflows/security.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions)

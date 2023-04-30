@@ -1,4 +1,4 @@
-name: Test
+name: Security
 on: [push, pull_request]
 # When a new revision is pushed to a PR, cancel all in-progress CI runs for that
 # PR. See https://docs.github.com/en/actions/using-jobs/using-concurrency
@@ -18,4 +18,5 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      - run: go mod download && go test -race ./...
+      - run: go mod download && go list -json -deps all > go.list
+      - uses: sonatype-nexus-community/nancy-github-action@main
