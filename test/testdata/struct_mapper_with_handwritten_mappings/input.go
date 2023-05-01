@@ -1,4 +1,4 @@
-package struct_mapper
+package struct_mapper_with_handwritten_mappings
 
 import (
 	"time"
@@ -7,8 +7,8 @@ import (
 )
 
 type Input struct {
-	ID       string
-	Metadata _misc.CustomType
+	ID     string
+	Policy _misc.Policy
 
 	CreatedAt time.Time
 	DeletedAt *time.Time

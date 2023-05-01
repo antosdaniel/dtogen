@@ -2,18 +2,20 @@ package test_test
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/antosdaniel/dtogen/internal/generator"
 	"github.com/antosdaniel/dtogen/internal/parser"
 	"github.com/antosdaniel/dtogen/internal/writer"
 	"github.com/stretchr/testify/assert"
-	"os"
-	"testing"
 )
 
 func TestScenarios(t *testing.T) {
 	testCases := []struct {
 		testdata string
 		input    generator.Input
+		expected string
 	}{
 		{
 			testdata: "struct_mapper",
@@ -28,6 +30,22 @@ func TestScenarios(t *testing.T) {
 				IncludeAllParsedFields: true,
 				SkipMapper:             false,
 			},
+		},
+		{
+			testdata: "struct_mapper_with_handwritten_mappings",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				SkipMapper:             false,
+				Fields: generator.FieldsInput{
+					{
+						Name:           "Policy",
+						OverrideTypeTo: "SimplePolicy",
+					},
+				},
+				OutputPackage:     "output",
+				OutputPackagePath: "./testdata/struct_mapper_with_handwritten_mappings/output",
+			},
+			expected: "./testdata/struct_mapper_with_handwritten_mappings/output/output.go",
 		},
 		{
 			testdata: "struct_with_base_types",
@@ -81,14 +99,19 @@ func TestScenarios(t *testing.T) {
 			tc.input.TypeName = "Input"
 			tc.input.RenameTypeTo = "DTO"
 			tc.input.PackagePath = fmt.Sprintf("./testdata/%s", tc.testdata)
-			tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
+			if tc.input.OutputPackage == "" {
+				tc.input.OutputPackage = fmt.Sprintf("%s_test", tc.testdata)
+			}
 			g := generator.New(parser.New(), writer.New())
 
 			result, err := g.Generate(tc.input)
 
 			if assert.NoError(t, err) {
-				e := expected(t, fmt.Sprintf("./testdata/%s/output_test.go", tc.testdata))
-				assert.Equal(t, e, result.String())
+				e := tc.expected
+				if e == "" {
+					e = fmt.Sprintf("./testdata/%s/output_test.go", tc.testdata)
+				}
+				assert.Equal(t, expected(t, e), result.String())
 			}
 		})
 	}

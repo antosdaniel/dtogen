@@ -2,8 +2,11 @@ package parser
 
 import (
 	"fmt"
-	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
+	"go/token"
+	"os"
+
+	"github.com/antosdaniel/dtogen/internal/generator"
 	"golang.org/x/tools/go/packages"
 )
 
@@ -17,7 +20,7 @@ func New() generator.Parser {
 
 func (p *parser) LoadPackage(importPath string) (generator.Parser, error) {
 	pkgs, err := packages.Load(&packages.Config{
-		Mode: packages.NeedSyntax | packages.NeedTypes | packages.NeedImports,
+		Mode: packages.NeedSyntax | packages.NeedTypes | packages.NeedImports | packages.NeedFiles,
 	}, importPath)
 	if err != nil {
 		return nil, err
@@ -93,14 +96,9 @@ func parseStructFromFile(file *ast.File, structName string) (*generator.ParsedSt
 }
 
 func parseStruct(structType *ast.StructType, typeName string, file *ast.File) (*generator.ParsedStruct, error) {
-	imports := make(generator.Imports, len(file.Imports))
-	for _, i := range file.Imports {
-		imports = append(imports, generator.NewImport(i))
-	}
-
 	result := &generator.ParsedStruct{
 		Name:    typeName,
-		Imports: imports,
+		Imports: fileImports(file),
 		Fields:  generator.ParsedFields{},
 	}
 
@@ -121,7 +119,7 @@ func parseMethods(pkg *packages.Package, structName string) generator.Methods {
 			if !isFunc {
 				continue
 			}
-			if funcDecl.Recv == nil || len(funcDecl.Recv.List) == 0 {
+			if !isMethod(funcDecl) {
 				continue
 			}
 			recv := funcDecl.Recv.List[0].Type
@@ -139,4 +137,66 @@ func parseMethods(pkg *packages.Package, structName string) generator.Methods {
 		}
 	}
 	return result
+}
+
+func (p *parser) GetFunctions() (generator.ParsedFunctions, generator.Imports, error) {
+	if p.pkg == nil {
+		return nil, nil, fmt.Errorf("load package first")
+	}
+
+	funcs := generator.ParsedFunctions{}
+	imports := generator.Imports{}
+	for _, f := range p.pkg.Syntax {
+		for _, d := range f.Decls {
+			funcDecl, isFunc := d.(*ast.FuncDecl)
+			if !isFunc {
+				continue
+			}
+			if isMethod(funcDecl) {
+				continue
+			}
+			// TODO: it's entire function, not just body
+			funcBody, err := getSource(p.pkg, funcDecl.Pos(), funcDecl.Body.End())
+			if err != nil {
+				return nil, nil, err
+			}
+			funcs = append(funcs, generator.NewParsedFunction(funcDecl.Name.Name, funcBody))
+			imports = append(imports, fileImports(f)...)
+		}
+	}
+	return funcs, imports, nil
+}
+
+func isMethod(f *ast.FuncDecl) bool {
+	return f.Recv != nil && len(f.Recv.List) > 0
+}
+
+func getSource(pkg *packages.Package, start, end token.Pos) (string, error) {
+	startPos := pkg.Fset.Position(start)
+	endPos := pkg.Fset.Position(end)
+	if startPos.Filename != endPos.Filename {
+		return "", fmt.Errorf("cant get source spanning multiple files")
+	}
+
+	file, err := getFile(startPos.Filename)
+	if err != nil {
+		return "", err
+	}
+	return file[startPos.Offset:endPos.Offset], nil
+}
+func getFile(filename string) (string, error) {
+	b, err := os.ReadFile(filename)
+	if err != nil {
+		return "", fmt.Errorf("unable to load file %q: %w", filename, err)
+	}
+
+	return string(b), nil
+}
+
+func fileImports(file *ast.File) generator.Imports {
+	imports := make(generator.Imports, len(file.Imports))
+	for _, i := range file.Imports {
+		imports = append(imports, generator.NewImport(i))
+	}
+	return imports
 }

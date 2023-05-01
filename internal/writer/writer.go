@@ -2,10 +2,12 @@ package writer
 
 import (
 	"fmt"
-	"github.com/antosdaniel/dtogen/internal/generator"
 	"go/ast"
 	"sort"
 	"strings"
+
+	"github.com/antosdaniel/dtogen/internal/generator"
+	"golang.org/x/tools/imports"
 )
 
 // writer Helps writing Go code.
@@ -24,7 +26,8 @@ func New() generator.Writer {
 
 // String Returns written code.
 func (w *writer) String() string {
-	return w.body
+	result, _ := imports.Process("", []byte(w.body), nil)
+	return string(result)
 }
 
 // In Increases indentation. Next lines will be indented by one level (tab) more.
@@ -155,16 +158,32 @@ func (w *writer) WriteMapper(mapper generator.Mapper) {
 	col := longestMappingDestinationLength(mapper.Mappings) + 1
 	for _, m := range mapper.Mappings {
 		space := strings.Repeat(" ", col-len(m.Destination()))
-		src := m.Source()
-		if m.IsMethod() {
-			src += "()"
-		}
-		w.WriteLine(fmt.Sprintf("%s:%ssrc.%s,", m.Destination(), space, src))
+		w.WriteLine(fmt.Sprintf("%s:%s%s,", m.Destination(), space, mappingSource(m)))
 	}
 	w.Out()
 	w.WriteLine("}")
 	w.Out()
 	w.WriteLine("}")
+
+	// TODO: Helpers should be handled in separate method
+	for _, h := range mapper.Helpers {
+		w.WriteEmptyLine()
+		w.WriteLine(h.Code())
+	}
+}
+
+func mappingSource(m generator.Mapping) string {
+	if m.IsFunction() {
+		return m.Source() + "(src." + m.Field() + ")"
+	}
+	if m.IsField() {
+		return "src." + m.Source()
+	}
+	if m.IsMethod() {
+		return "src." + m.Source() + "()"
+	}
+
+	return generator.HandwrittenMapperName(m.Source()) + "(src." + m.Field() + ")"
 }
 
 func longestMappingDestinationLength(mappings generator.Mappings) int {

@@ -1,9 +1,10 @@
 package struct_mapper_with_getters_test
 
 import (
+	"time"
+
 	"github.com/antosdaniel/dtogen/test/testdata/_misc"
 	"github.com/antosdaniel/dtogen/test/testdata/struct_mapper_with_getters"
-	"time"
 )
 
 type DTO struct {

@@ -30,6 +30,15 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 		imports = append(imports, parsed.Package.ToImport())
 	}
 
+	// Output might not exist, which is fine. Ignore errors.
+	var possibleMappers ParsedFunctions
+	outputParser, err := g.parser.LoadPackage(input.OutputPackagePath)
+	if err == nil {
+		tmp, imp, _ := outputParser.GetFunctions()
+		possibleMappers = tmp
+		imports = append(imports, imp...)
+	}
+
 	g.writer.WritePackage(input.OutputPackage)
 	g.writer.WriteEmptyLine()
 	if len(imports) > 0 {
@@ -39,7 +48,12 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 	g.writer.WriteStruct(input.desiredTypeName(), fields)
 	if input.generateMapper() {
 		g.writer.WriteEmptyLine()
-		g.writer.WriteMapper(prepareMapper(*parsed, fields, input.desiredTypeName()))
+		g.writer.WriteMapper(prepareMapper(
+			input.desiredTypeName(),
+			*parsed,
+			fields,
+			possibleMappers,
+		))
 	}
 
 	return g.writer, nil

@@ -2,9 +2,10 @@ package struct_with_sub_types_test
 
 import (
 	"bytes"
-	"github.com/antosdaniel/dtogen/test/testdata/_misc"
 	"time"
 	mytime "time"
+
+	"github.com/antosdaniel/dtogen/test/testdata/_misc"
 )
 
 type DTO struct {

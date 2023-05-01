@@ -24,7 +24,8 @@ type Input struct {
 	SkipMapper bool
 
 	// OutputPackage Name of a package that result DTO should belong to.
-	OutputPackage string
+	OutputPackage     string
+	OutputPackagePath string
 }
 
 func (i Input) desiredTypeName() string {

@@ -1,8 +1,9 @@
 package struct_with_override_type
 
 import (
-	"github.com/antosdaniel/dtogen/test/testdata/_misc"
 	"time"
+
+	"github.com/antosdaniel/dtogen/test/testdata/_misc"
 )
 
 type Input struct {
