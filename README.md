@@ -8,7 +8,29 @@ Generate DTOs with mappers based on existing Go types.
 go install github.com/antosdaniel/dtogen/cmd/godtogen
 ```
 
-## Example
+## Usage
+
+```
+Usage of godtogen:
+  -all-fields
+        If set to true, all fields, no matter if they are present in Fields, will be included.
+  -help
+        Show help prompt.
+  -o string
+        File to which generated Go file will be saved. If empty, stdout will be used.
+  -out-pkg string
+        Import path to where DTO will be generated.
+  -pkg-path string
+        Import path to package in which source object is present.
+  -rename-type-to string
+        Desired name of a DTO. If empty, original name will be used.
+  -skip-mapper
+        If set to true, mapper will not be generated.
+  -type-name string
+        Name of DTO in the source.
+```
+
+## Examples
 
 ### Create DTO and mapper for built-in type
 

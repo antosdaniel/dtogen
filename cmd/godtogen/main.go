@@ -21,11 +21,13 @@ var (
 
 	outputPackagePath = flag.String("out-pkg", "", "Import path to where DTO will be generated.")
 	outputFile        = flag.String("o", "", "File to which generated Go file will be saved. If empty, stdout will be used.")
+
+	showHelp = flag.Bool("help", false, "Show help prompt.")
 )
 
 func main() {
 	flag.Parse()
-	if len(os.Args) <= 1 {
+	if len(os.Args) <= 1 || *showHelp {
 		printHelp()
 		os.Exit(0)
 	}
