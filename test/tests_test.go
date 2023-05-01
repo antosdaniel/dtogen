@@ -16,17 +16,24 @@ func TestScenarios(t *testing.T) {
 		input    generator.Input
 	}{
 		{
+			testdata: "struct_mapper",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				SkipMapper:             false,
+			},
+		},
+		{
+			testdata: "struct_mapper_with_getters",
+			input: generator.Input{
+				IncludeAllParsedFields: true,
+				SkipMapper:             false,
+			},
+		},
+		{
 			testdata: "struct_with_base_types",
 			input: generator.Input{
 				IncludeAllParsedFields: true,
 				SkipMapper:             true,
-			},
-		},
-		{
-			testdata: "struct_with_mappers",
-			input: generator.Input{
-				IncludeAllParsedFields: true,
-				SkipMapper:             false,
 			},
 		},
 		{

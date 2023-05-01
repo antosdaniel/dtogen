@@ -1,8 +1,8 @@
-package struct_with_mappers_test
+package struct_mapper_test
 
 import (
 	"github.com/antosdaniel/dtogen/test/testdata/_misc"
-	"github.com/antosdaniel/dtogen/test/testdata/struct_with_mappers"
+	"github.com/antosdaniel/dtogen/test/testdata/struct_mapper"
 	"time"
 )
 
@@ -13,7 +13,7 @@ type DTO struct {
 	DeletedAt *time.Time
 }
 
-func NewDTO(src struct_with_mappers.Input) DTO {
+func NewDTO(src struct_mapper.Input) DTO {
 	return DTO{
 		ID:        src.ID,
 		Metadata:  src.Metadata,

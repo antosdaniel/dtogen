@@ -29,24 +29,26 @@ func (p *parser) LoadPackage(importPath string) (generator.Parser, error) {
 	return &parser{pkg: pkgs[0]}, nil
 }
 
-func (p *parser) GetStruct(typeName string) (*generator.ParsedStruct, error) {
+func (p *parser) GetStruct(structName string) (*generator.ParsedStruct, error) {
 	if p.pkg == nil {
 		return nil, fmt.Errorf("load package first")
 	}
 
-	parsed, err := parseStructFromPkg(p.pkg, typeName)
+	parsed, err := parseStructFromPkg(p.pkg, structName)
 	if err != nil {
 		return nil, err
 	}
-	if parsed != nil {
-		return parsed, nil
+	if parsed == nil {
+		return nil, fmt.Errorf("struct not found: %q", structName)
 	}
-	return nil, fmt.Errorf("type not found: %q", typeName)
+
+	parsed.Methods = parseMethods(p.pkg, structName)
+	return parsed, nil
 }
 
-func parseStructFromPkg(pkg *packages.Package, typeName string) (*generator.ParsedStruct, error) {
+func parseStructFromPkg(pkg *packages.Package, structName string) (*generator.ParsedStruct, error) {
 	for _, file := range pkg.Syntax {
-		parsed, err := parseStructFromFile(file, typeName)
+		parsed, err := parseStructFromFile(file, structName)
 		if err != nil {
 			return nil, err
 		}
@@ -59,7 +61,7 @@ func parseStructFromPkg(pkg *packages.Package, typeName string) (*generator.Pars
 	return nil, nil
 }
 
-func parseStructFromFile(file *ast.File, typeName string) (*generator.ParsedStruct, error) {
+func parseStructFromFile(file *ast.File, structName string) (*generator.ParsedStruct, error) {
 	for _, d := range file.Decls {
 		genDecl, ok := d.(*ast.GenDecl)
 		if !ok {
@@ -71,14 +73,14 @@ func parseStructFromFile(file *ast.File, typeName string) (*generator.ParsedStru
 			if !ok {
 				continue
 			}
-			if typeName != typeSpec.Name.Name {
+			if structName != typeSpec.Name.Name {
 				continue
 			}
 
 			switch typeSpec.Type.(type) {
 			case *ast.StructType:
 				t := typeSpec.Type.(*ast.StructType)
-				return parseStruct(t, typeName, file)
+				return parseStruct(t, structName, file)
 			default:
 				return nil, fmt.Errorf(
 					"specified declaration is not a struct: %T", typeSpec.Type,
@@ -109,4 +111,32 @@ func parseStruct(structType *ast.StructType, typeName string, file *ast.File) (*
 	}
 
 	return result, nil
+}
+
+func parseMethods(pkg *packages.Package, structName string) generator.Methods {
+	result := generator.Methods{}
+	for _, f := range pkg.Syntax {
+		for _, d := range f.Decls {
+			funcDecl, isFunc := d.(*ast.FuncDecl)
+			if !isFunc {
+				continue
+			}
+			if funcDecl.Recv == nil || len(funcDecl.Recv.List) == 0 {
+				continue
+			}
+			recv := funcDecl.Recv.List[0].Type
+			if star, isStar := recv.(*ast.StarExpr); isStar {
+				recv = star.X
+			}
+			ident, ok := recv.(*ast.Ident)
+			if !ok {
+				continue
+			}
+			if ident.Name != structName {
+				continue
+			}
+			result = append(result, generator.NewMethod(funcDecl.Name.Name))
+		}
+	}
+	return result
 }

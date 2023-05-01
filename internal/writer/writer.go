@@ -115,6 +115,18 @@ func (w *writer) WriteStruct(structName string, fields generator.Fields) {
 	w.WriteLine("}")
 }
 
+func longestFieldNameLength(fields generator.Fields) int {
+	result := 0
+	for _, f := range fields {
+		l := len(f.DesiredName())
+		if l > result {
+			result = l
+		}
+	}
+
+	return result
+}
+
 func writeType(fieldType ast.Expr) string {
 	switch fieldType.(type) {
 	case *ast.Ident:
@@ -129,32 +141,25 @@ func writeType(fieldType ast.Expr) string {
 	}
 }
 
-/*
-func NewDTO(src struct_with_mappers.Input) DTO {
-	return DTO{
-		ID:        src.ID,
-		Metadata:  src.Metadata,
-		CreatedAt: src.CreatedAt,
-		DeletedAt: src.DeletedAt,
-	}
-}
-*/
-
 func (w *writer) WriteMapper(mapper generator.Mapper) {
 	w.WriteLine(fmt.Sprintf(
 		"func New%s(src %s.%s) %s {",
-		mapper.ToTypeName,
-		mapper.FromImportName,
-		mapper.FromTypeName,
-		mapper.ToTypeName,
+		mapper.DestinationTypeName,
+		mapper.SourceImportName,
+		mapper.SourceTypeName,
+		mapper.DestinationTypeName,
 	))
 	w.In()
-	w.WriteLine(fmt.Sprintf("return %s{", mapper.ToTypeName))
+	w.WriteLine(fmt.Sprintf("return %s{", mapper.DestinationTypeName))
 	w.In()
-	col := longestFieldNameLength(mapper.Fields) + 1
-	for _, f := range mapper.Fields {
-		space := strings.Repeat(" ", col-len(f.DesiredName()))
-		w.WriteLine(fmt.Sprintf("%s:%ssrc.%s,", f.DesiredName(), space, f.OriginalName()))
+	col := longestMappingDestinationLength(mapper.Mappings) + 1
+	for _, m := range mapper.Mappings {
+		space := strings.Repeat(" ", col-len(m.Destination()))
+		src := m.Source()
+		if m.IsMethod() {
+			src += "()"
+		}
+		w.WriteLine(fmt.Sprintf("%s:%ssrc.%s,", m.Destination(), space, src))
 	}
 	w.Out()
 	w.WriteLine("}")
@@ -162,10 +167,10 @@ func (w *writer) WriteMapper(mapper generator.Mapper) {
 	w.WriteLine("}")
 }
 
-func longestFieldNameLength(fields generator.Fields) int {
+func longestMappingDestinationLength(mappings generator.Mappings) int {
 	result := 0
-	for _, f := range fields {
-		l := len(f.DesiredName())
+	for _, m := range mappings {
+		l := len(m.Destination())
 		if l > result {
 			result = l
 		}

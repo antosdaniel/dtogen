@@ -1,4 +1,4 @@
-package struct_with_mappers
+package struct_mapper
 
 import (
 	"github.com/antosdaniel/dtogen/test/testdata/_misc"

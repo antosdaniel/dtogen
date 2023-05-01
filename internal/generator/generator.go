@@ -39,22 +39,8 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 	g.writer.WriteStruct(input.desiredTypeName(), fields)
 	if input.generateMapper() {
 		g.writer.WriteEmptyLine()
-		g.writer.WriteMapper(Mapper{
-			FromTypeName:   parsed.Name,
-			FromImportName: parsed.Package.name,
-			ToTypeName:     input.desiredTypeName(),
-			Fields:         fields,
-		})
+		g.writer.WriteMapper(prepareMapper(*parsed, fields, input.desiredTypeName()))
 	}
 
 	return g.writer, nil
-}
-
-type Mapper struct {
-	FromTypeName   string
-	FromImportName string
-
-	ToTypeName string
-
-	Fields Fields
 }
