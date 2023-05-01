@@ -143,7 +143,7 @@ func writeType(fieldType ast.Expr) string {
 		sel := fieldType.(*ast.SelectorExpr)
 		return writeType(sel.X) + "." + sel.Sel.Name
 	default:
-		panic(fmt.Errorf("unsupported type: %T", fieldType))
+		return "<unsupported type>" // TODO
 	}
 }
 
