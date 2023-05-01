@@ -30,6 +30,21 @@ func main() {
 		os.Exit(0)
 	}
 
+	result, err := generator.New(parser.New(), writer.New()).Generate(getInput())
+	if err != nil {
+		fmt.Printf("Generation failed: %s", err)
+		os.Exit(1)
+	}
+
+	if *outputFile == "" {
+		fmt.Println(result.String())
+		os.Exit(0)
+	}
+
+	saveToFile(result.String())
+}
+
+func getInput() generator.Input {
 	fields := generator.FieldsInput{}
 	for _, a := range flag.Args() {
 		parts := strings.Split(a, "/")
@@ -46,7 +61,7 @@ func main() {
 		fields = append(fields, generator.FieldInput{Name: name, RenameTo: rename, OverrideTypeTo: _type})
 	}
 
-	input := generator.Input{
+	return generator.Input{
 		PackagePath:            *packagePath,
 		TypeName:               *typeName,
 		RenameTypeTo:           *renameTypeTo,
@@ -55,20 +70,12 @@ func main() {
 		SkipMapper:             *skipMapper,
 		OutputPackagePath:      *outputPackagePath,
 	}
-	result, err := generator.New(parser.New(), writer.New()).Generate(input)
-	if err != nil {
-		fmt.Printf("Error during generating: %s\n", err)
-		os.Exit(1)
-	}
+}
 
-	if *outputFile == "" {
-		fmt.Println(result.String())
-		os.Exit(0)
-	}
-
-	err = os.WriteFile(*outputFile, []byte(result.String()), 0644)
+func saveToFile(content string) {
+	err := os.WriteFile(*outputFile, []byte(content), 0644)
 	if err != nil {
-		fmt.Printf("Could not save file: %s\n", err)
+		fmt.Printf("Could not save file: %s", err)
 		os.Exit(1)
 	}
 }
