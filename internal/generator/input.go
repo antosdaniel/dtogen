@@ -45,7 +45,10 @@ func (i Input) outputPackage() string {
 	if i.OutputPackage != "" {
 		return i.OutputPackage
 	}
-	return getPackageName(i.OutputPackagePath)
+	if i.OutputPackagePath != "" {
+		return getPackageName(i.OutputPackagePath)
+	}
+	return getPackageName(i.PackagePath)
 }
 
 type FieldsInput []FieldInput
