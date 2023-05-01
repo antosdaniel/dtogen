@@ -18,4 +18,11 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: ${{ matrix.go }}
-      - run: go mod download && go test -race ./...
+      - name: Run tests
+        run: go mod download && go test -race -covermode atomic -coverprofile=./coverage.out.tmp -coverpkg=./... ./...
+      - name: Install coveralls
+        run: curl -L https://coveralls.io/coveralls-linux.tar.gz | tar -xz
+      - name: Report coverage
+        run: ./coveralls --file ./coverage.out.tmp
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
