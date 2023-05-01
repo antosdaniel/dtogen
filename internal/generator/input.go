@@ -6,9 +6,9 @@ package generator
 // - PackagePath
 // - TypeName
 // - IncludeAllParsedFields or Fields. Both can be present, if you want to include all fields, and rename some of them.
-// - OutputPackage
+// - OutputPackagePath
 type Input struct {
-	// PackagePath Import path to package in which DTO is present.
+	// PackagePath Import path to package in which source object is present.
 	PackagePath string
 	// TypeName Name of DTO in the source.
 	TypeName string
@@ -23,9 +23,10 @@ type Input struct {
 	// If SkipMapper is set to true, mapper will not be generated.
 	SkipMapper bool
 
-	// OutputPackage Name of a package that result DTO should belong to.
-	OutputPackage     string
+	// OutputPackagePath Import path to where DTO will be generated.
 	OutputPackagePath string
+	// OutputPackage Overrides output package name.
+	OutputPackage string
 }
 
 func (i Input) desiredTypeName() string {
@@ -38,6 +39,13 @@ func (i Input) desiredTypeName() string {
 
 func (i Input) generateMapper() bool {
 	return !i.SkipMapper
+}
+
+func (i Input) outputPackage() string {
+	if i.OutputPackage != "" {
+		return i.OutputPackage
+	}
+	return getPackageName(i.OutputPackagePath)
 }
 
 type FieldsInput []FieldInput

@@ -39,7 +39,7 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 		imports = append(imports, imp...)
 	}
 
-	g.writer.WritePackage(input.OutputPackage)
+	g.writer.WritePackage(input.outputPackage())
 	g.writer.WriteEmptyLine()
 	if len(imports) > 0 {
 		g.writer.WriteImports(imports)

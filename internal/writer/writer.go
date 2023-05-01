@@ -26,8 +26,11 @@ func New() generator.Writer {
 
 // String Returns written code.
 func (w *writer) String() string {
-	result, _ := imports.Process("", []byte(w.body), nil)
-	return string(result)
+	result, err := imports.Process("", []byte(w.body), nil)
+	if err == nil {
+		return string(result)
+	}
+	return w.body
 }
 
 // In Increases indentation. Next lines will be indented by one level (tab) more.
