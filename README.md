@@ -11,37 +11,37 @@ go install github.com/antosdaniel/dtogen/cmd/godtogen
 ## Usage
 
 ```
-Usage of godtogen:
-  -all-fields
-        If set to true, all fields, no matter if they are present in Fields, will be included.
-  -help
-        Show help prompt.
-  -o string
-        File to which generated Go file will be saved. If empty, stdout will be used.
-  -out-pkg string
-        Import path to where DTO will be generated.
-  -pkg-path string
-        Import path to package in which source object is present.
-  -rename-type-to string
-        Desired name of a DTO. If empty, original name will be used.
-  -skip-mapper
-        If set to true, mapper will not be generated.
-  -type-name string
-        Name of DTO in the source.
+godtogen --src <value> --dst <value> [--out <value>] [-rename <value>] [fields]
+
+  [fields] should follow a pattern of <name>[=rename][.type]
+      <name> determines name of a field on source object. Required.
+      [=rename] can be used to rename field. Optional.
+      [.type] can be used to override field type. Optional.
+      For example: "Foo=Bar.MyType" will rename field "Foo" to "Bar", and change its type to "MyType".
+      If no fields are selected, all fields from the source will be used.
+
+      --all-fields      All fields of source object will be used. You can still use it with [fields] arguments, if you want to rename field, or change its type.
+  -d, --dst string      Path to destination package, where generated object will be placed.
+                        Absolute and relative import paths are supported.
+  -h, --help            Show help prompt.
+  -o, --out string      Path to file, to which generated code will be saved. If empty, stdout will be used.
+  -r, --rename string   Desired name of generated object. If empty, source name will be used.
+  -s, --src string      Path to source object, based on which generation will happen.
+                        Value should follow <import path>.<type> pattern. For example "net/http.Response". Absolute and relative import paths are supported.
 ```
 
 ## Examples
 
-### Create DTO and mapper for built-in type
+### Create DTO and mapper for built-in type, with selected fields
 
-`Body/ResponseBody` renames `Body` field to `ResponseBody`
+Create DTO for type `Response` from package `net/http`. Destination package is set to relative `./my/dto`. We are picking 4 specific fields, and specifying that `Body` field should be renamed to `ResponseBody`.
 
 ```sh
-godtogen -pkg-path net/http -type-name Response Status StatusCode Body/ResponseBody Request
+godtogen --src net/http.Response --dst ./my/dto Status StatusCode Body=ResponseBody Request
 ```
 
 ```go
-package http
+package dto
 
 import (
 	"io"
@@ -52,6 +52,7 @@ type Response struct {
 	Status       string
 	StatusCode   int
 	ResponseBody io.ReadCloser
+	Request      *Request
 }
 
 func NewResponse(src http.Response) Response {
@@ -59,83 +60,42 @@ func NewResponse(src http.Response) Response {
 		Status:       src.Status,
 		StatusCode:   src.StatusCode,
 		ResponseBody: src.Body,
+		Request:      src.Request,
 	}
 }
 ```
 
-### Create DTO and mapper using auto-detected getters
+### Map fields using getters
+
+When source fields is not exported, mapper will automatically look for getters.
 
 ```sh
-godtogen -pkg-path ./test/testdata/struct_mapper_with_getters -type-name Input
+godtogen --src ./test/testdata/struct_mapper_with_getters.Input --dst dto
 ```
 
 ```go
-package struct_mapper_with_getters
-
-import (
-    "time"
-
-    "github.com/antosdaniel/dtogen/test/testdata/_misc"
-    "github.com/antosdaniel/dtogen/test/testdata/struct_mapper_with_getters"
-)
-
-type Input struct {
-    Id        string
-    Metadata  _misc.CustomType
-    CreatedAt time.Time
-    DeletedAt *time.Time
-}
-
-func NewInput(src struct_mapper_with_getters.Input) Input {
-    return Input{
-        Id:        src.ID(),
-        Metadata:  src.Metadata,
-        CreatedAt: src.GetCreatedAt(),
-        DeletedAt: src.DeletedAt(),
-    }
-}
-```
-
-### Change field type, and use handwritten mapping functions
-
-You might want to change certain fields' type. Additionaly, you might want to control how these types are created. Any `New<Field>` (exported or unexported) in output package will be preserved and used.
-
-```sh
-godtogen -pkg-path ./test/testdata/struct_mapper_with_handwritten_mappings -out-pkg ./test/testdata/struct_mapper_with_handwritten_mappings/output -type-name Input -all-fields Policy//SimplePolicy
-```
-
-`Policy//SimplePolicy` instructs that `Policy` field should be of `SimplePolicy` type.
-
-```go
-package output
+package dto
 
 import (
 	"time"
 
 	"github.com/antosdaniel/dtogen/test/testdata/_misc"
-	"github.com/antosdaniel/dtogen/test/testdata/struct_mapper_with_handwritten_mappings"
+	"github.com/antosdaniel/dtogen/test/testdata/struct_mapper_with_getters"
 )
 
 type Input struct {
-	ID        string
-	Policy    SimplePolicy
+	Id        string
+	Metadata  _misc.CustomType
 	CreatedAt time.Time
 	DeletedAt *time.Time
 }
 
-func NewInput(src struct_mapper_with_handwritten_mappings.Input) Input {
+func NewInput(src struct_mapper_with_getters.Input) Input {
 	return Input{
-		ID:        src.ID,
-		Policy:    NewPolicy(src.Policy),
-		CreatedAt: src.CreatedAt,
-		DeletedAt: src.DeletedAt,
-	}
-}
-
-func NewPolicy(src _misc.Policy) SimplePolicy {
-	return SimplePolicy{
-		ID:   src.ID,
-		Name: src.Name,
+		Id:        src.ID(),
+		Metadata:  src.Metadata,
+		CreatedAt: src.GetCreatedAt(),
+		DeletedAt: src.DeletedAt(),
 	}
 }
 ```
