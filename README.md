@@ -1,4 +1,4 @@
-# dtogen [![Tests](https://github.com/antosdaniel/dtogen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions) [![Coverage](https://coveralls.io/repos/github/antosdaniel/dtogen/badge.svg)](https://coveralls.io/github/antosdaniel/dtogen) [![Security](https://github.com/antosdaniel/dtogen/actions/workflows/security.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions)
+# dtogen [![Tests](https://github.com/antosdaniel/dtogen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions) [![Coverage](https://coveralls.io/repos/github/antosdaniel/dtogen/badge.svg)](https://coveralls.io/github/antosdaniel/dtogen) [![Go Report Card](https://goreportcard.com/badge/github.com/antosdaniel/dtogen)](https://goreportcard.com/report/github.com/antosdaniel/dtogen) [![Security](https://github.com/antosdaniel/dtogen/actions/workflows/security.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions)
 
 Generate DTOs with mappers based on existing Go types.
 
