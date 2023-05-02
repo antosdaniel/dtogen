@@ -23,30 +23,37 @@ var (
 )
 
 func main() {
+	output, err := run()
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	if output != "" {
+		fmt.Println(output)
+	}
+}
+
+func run() (string, error) {
 	flag.Parse()
 	if len(os.Args) <= 1 || *help {
-		printHelp()
-		os.Exit(0)
+		return printHelp(), nil
 	}
 
 	input, err := getInput()
 	if err != nil {
-		fmt.Printf("Invalid argument: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("invalid argument: %s", err)
 	}
 
 	result, err := generator.New(parser.New(), writer.New()).Generate(*input)
 	if err != nil {
-		fmt.Printf("Generation failed: %s\n", err)
-		os.Exit(1)
+		return "", fmt.Errorf("generation failed: %s\n", err)
 	}
 
 	if *out == "" {
-		fmt.Println(result.String())
-		os.Exit(0)
+		return result.String(), nil
 	}
 
-	saveToFile(result.String())
+	return "", saveToFile(result.String())
 }
 
 func getInput() (*generator.Input, error) {
@@ -109,23 +116,25 @@ func getFields(args []string) generator.FieldsInput {
 	return fields
 }
 
-func saveToFile(content string) {
+func saveToFile(content string) error {
 	err := os.WriteFile(*out, []byte(content), 0644)
 	if err != nil {
-		fmt.Printf("Could not save file: %s\n", err)
-		os.Exit(1)
+		return fmt.Errorf("could not save file: %s\n", err)
 	}
+	return nil
 }
 
-func printHelp() {
-	fmt.Println("godtogen --src <value> --dst <value> [--out <value>] [-rename <value>] [fields]")
-	fmt.Println()
-	fmt.Println(`  [fields] should follow a pattern of <name>[=rename][.type]
+func printHelp() string {
+	return strings.TrimSpace(fmt.Sprintf(`
+godtogen --src <value> --dst <value> [--out <value>] [-rename <value>] [fields]
+
+  [fields] should follow a pattern of <name>[=rename][.type]
       <name> determines name of a field on source object. Required.
       [=rename] can be used to rename field. Optional.
       [.type] can be used to override field type. Optional.
       For example: "Foo=Bar.MyType" will rename field "Foo" to "Bar", and change its type to "MyType".
-      If no fields are selected, all fields from the source will be used.`)
-	fmt.Println()
-	flag.PrintDefaults()
+      If no fields are selected, all fields from the source will be used.
+
+%s
+`, flag.CommandLine.FlagUsages()))
 }

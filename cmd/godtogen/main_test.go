@@ -3,9 +3,8 @@ package main
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
 	"github.com/antosdaniel/dtogen/internal/generator"
+	"github.com/stretchr/testify/assert"
 )
 
 func Test_getFields(t *testing.T) {
