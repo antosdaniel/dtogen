@@ -5,32 +5,39 @@ import (
 	"strings"
 )
 
-func determineUsedImports(_type ast.Expr, imports Imports) Imports {
-	expr := _type
-	// If it's a pointer, get underlying type
-	if star, ok := expr.(*ast.StarExpr); ok {
-		expr = star.X
-	}
-
-	// TODO: This is very much a simplification. It will not work with lists nor maps.
-	sel, ok := expr.(*ast.SelectorExpr)
-	if !ok {
-		return nil
-	}
-
+func determineUsedImports(expr ast.Expr, imports Imports) Imports {
 	result := Imports{}
-	for _, i := range imports {
-		// Can it be something else?
-		ident, ok := sel.X.(*ast.Ident)
-		if !ok {
-			continue
+	for _, ti := range getTypeImports(expr) {
+		for _, i := range imports {
+			if i.UsedName() != ti {
+				continue
+			}
+			result = append(result, i)
 		}
-		if i.UsedName() != ident.Name {
-			continue
-		}
-		result = append(result, i)
 	}
 	return result
+}
+
+// getSelectors Retrieves all imports for given type
+func getTypeImports(expr ast.Expr) []string {
+	switch expr.(type) {
+	case *ast.StarExpr:
+		return getTypeImports(expr.(*ast.StarExpr).X)
+	case *ast.SelectorExpr:
+		// Can SelectorExpr.X be something else than Ident?
+		ident, ok := expr.(*ast.SelectorExpr).X.(*ast.Ident)
+		if !ok {
+			return nil
+		}
+		return []string{ident.Name}
+	case *ast.ArrayType:
+		return getTypeImports(expr.(*ast.ArrayType).Elt)
+	case *ast.MapType:
+		m := expr.(*ast.MapType)
+		return append(getTypeImports(m.Key), getTypeImports(m.Value)...)
+	default:
+		return nil
+	}
 }
 
 type Imports []Import

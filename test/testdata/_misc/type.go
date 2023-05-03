@@ -2,6 +2,8 @@ package _misc
 
 import "time"
 
+type Key string
+
 type CustomType struct {
 	Foo string
 	Bar string

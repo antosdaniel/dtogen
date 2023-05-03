@@ -142,6 +142,11 @@ func writeType(fieldType ast.Expr) string {
 	case *ast.SelectorExpr:
 		sel := fieldType.(*ast.SelectorExpr)
 		return writeType(sel.X) + "." + sel.Sel.Name
+	case *ast.ArrayType:
+		return "[]" + writeType(fieldType.(*ast.ArrayType).Elt)
+	case *ast.MapType:
+		m := fieldType.(*ast.MapType)
+		return "map[" + writeType(m.Key) + "]" + writeType(m.Value)
 	default:
 		return "<unsupported type>" // TODO
 	}

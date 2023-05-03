@@ -33,4 +33,13 @@ type Input struct {
 	PtrFloat32 *float32
 	Float64    float64
 	PtrFloat64 *float64
+
+	SliceOfString           []string
+	SliceOfPtrString        []*string
+	SliceOfInt              []int
+	SliceOfSliceOfPtrString [][]*string
+
+	MapStringString       map[string]string
+	MapStringInt          map[string]int
+	MapStringListOfString map[string][]string
 }
