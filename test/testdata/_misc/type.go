@@ -10,9 +10,10 @@ type CustomType struct {
 }
 
 type Policy struct {
-	ID     string
-	Name   string
-	Author string
+	ID              string
+	Name            string
+	AuthorFirstName string
+	AuthorLastName  string
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

@@ -1,6 +1,7 @@
 package output
 
 import (
+	"strings"
 	"time"
 
 	"github.com/antosdaniel/dtogen/test/testdata/_misc"
@@ -27,5 +28,7 @@ func NewPolicy(src _misc.Policy) SimplePolicy {
 	return SimplePolicy{
 		ID:   src.ID,
 		Name: src.Name,
+		// strings.Join is used to check if imports will be preserved
+		AuthorFullName: strings.Join([]string{src.AuthorFirstName, src.AuthorLastName}, " - "),
 	}
 }

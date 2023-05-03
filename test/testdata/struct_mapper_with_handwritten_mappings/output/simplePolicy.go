@@ -1,6 +1,7 @@
 package output
 
 type SimplePolicy struct {
-	ID   string
-	Name string
+	ID             string
+	Name           string
+	AuthorFullName string
 }
