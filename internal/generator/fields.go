@@ -5,35 +5,35 @@ import (
 	"strings"
 )
 
-func prepareFields(
-	includeAllParsedFields bool,
-	desiredFields FieldsInput,
-	parsedFields ParsedFields,
-	imports Imports,
-) Fields {
-	result := Fields{}
-	for _, f := range parsedFields {
-		desired, found := desiredFields.findByOriginalName(f.Name())
-		if !found && !includeAllParsedFields {
-			continue
-		}
-
-		var usedImports Imports
-		if desired.OverrideTypeTo == "" {
-			usedImports = determineUsedImports(f.Type(), imports)
-		}
-
-		result = append(result, Field{
-			name:         f.Name(),
-			renameTo:     desired.RenameTo,
-			_type:        f.Type(),
-			overrideType: desired.OverrideTypeTo,
-			imports:      usedImports,
-		})
-	}
-
-	return result
-}
+//func prepareFields(
+//	includeAllParsedFields bool,
+//	desiredFields FieldsInput,
+//	parsedFields ParsedFields,
+//	imports Imports,
+//) Fields {
+//	result := Fields{}
+//	for _, f := range parsedFields {
+//		desired, found := desiredFields.findByOriginalName(f.Name())
+//		if !found && !includeAllParsedFields {
+//			continue
+//		}
+//
+//		var usedImports Imports
+//		if desired.OverrideTypeTo == "" {
+//			usedImports = determineUsedImports(f.Type(), imports)
+//		}
+//
+//		result = append(result, Field{
+//			name:         f.Name(),
+//			renameTo:     desired.RenameTo,
+//			_type:        f.Type(),
+//			overrideType: desired.OverrideTypeTo,
+//			imports:      usedImports,
+//		})
+//	}
+//
+//	return result
+//}
 
 type Fields []Field
 
