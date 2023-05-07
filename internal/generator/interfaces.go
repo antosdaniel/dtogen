@@ -7,7 +7,6 @@ type Parser interface {
 
 type Writer interface {
 	String() string
-	WriteEmptyLine()
 	WritePackage(pkg string)
 	WriteImports(imports Imports)
 	WriteMapper(mapper Mapper, outputPkg string)

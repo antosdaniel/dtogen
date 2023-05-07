@@ -33,6 +33,23 @@ func TestScenarios(t *testing.T) {
 			},
 			expected: "./testdata/simple_struct/mapper.go",
 		},
+		{
+			name: "import_paths",
+			input: generator.Input{
+				Src: []generator.TypeInput{
+					{
+						ImportPath: "./testdata/import_paths/src",
+						Type:       "Src",
+					},
+				},
+				Dst: generator.TypeInput{
+					ImportPath: "./testdata/import_paths/dst",
+					Type:       "Dst",
+				},
+				OutputPkgPath: "./testdata/import_paths",
+			},
+			expected: "./testdata/import_paths/mapper.go",
+		},
 	}
 
 	for _, tc := range testCases {

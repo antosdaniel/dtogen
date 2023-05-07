@@ -30,10 +30,11 @@ func (g *Generator) Generate(input Input) (Generated, error) {
 	}
 
 	outputPkg := getOutputPkg(input.OutputPkgPath)
+	imports := combineImports(srcTypes, dstType)
 	mapper := newMapper(srcTypes, dstType)
 
 	g.writer.WritePackage(outputPkg)
-	g.writer.WriteEmptyLine()
+	g.writer.WriteImports(imports)
 	g.writer.WriteMapper(mapper, outputPkg)
 
 	return g.writer, nil
@@ -46,4 +47,14 @@ func getOutputPkg(outputPkgPath string) string {
 	}
 
 	return parts[len(parts)-1]
+}
+
+func combineImports(srcTypes []*ParsedStruct, dstType *ParsedStruct) Imports {
+	imports := dstType.Imports
+	imports = append(imports, dstType.Package.ToImport())
+	for _, s := range srcTypes {
+		imports = append(imports, s.Package.ToImport())
+		imports = append(imports, s.Imports...)
+	}
+	return imports
 }
