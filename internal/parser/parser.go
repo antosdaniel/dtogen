@@ -11,33 +11,43 @@ import (
 )
 
 type parser struct {
-	pkg *packages.Package
+	pkgs map[string]*packages.Package
 }
 
 func New() generator.Parser {
-	return &parser{}
+	return &parser{
+		pkgs: map[string]*packages.Package{},
+	}
 }
 
-func (p *parser) LoadPackage(importPath string) (generator.Parser, error) {
+func (p *parser) getPackage(importPath string) (*packages.Package, error) {
+	pkg, ok := p.pkgs[importPath]
+	if ok {
+		return pkg, nil
+	}
+
 	pkgs, err := packages.Load(&packages.Config{
 		Mode: packages.NeedSyntax | packages.NeedTypes | packages.NeedImports | packages.NeedFiles,
 	}, importPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not load package %q: %w", importPath, err)
 	}
 	if len(pkgs) == 0 {
 		return nil, fmt.Errorf("package not found: %q", importPath)
 	}
 
-	return &parser{pkg: pkgs[0]}, nil
+	pkg = pkgs[0]
+	p.pkgs[importPath] = pkg
+	return pkg, nil
 }
 
-func (p *parser) GetStruct(structName string) (*generator.ParsedStruct, error) {
-	if p.pkg == nil {
-		return nil, fmt.Errorf("load package first")
+func (p *parser) GetStruct(importPath string, structName string) (*generator.ParsedStruct, error) {
+	pkg, err := p.getPackage(importPath)
+	if err != nil {
+		return nil, err
 	}
 
-	parsed, err := parseStructFromPkg(p.pkg, structName)
+	parsed, err := parseStructFromPkg(pkg, structName)
 	if err != nil {
 		return nil, err
 	}
@@ -45,7 +55,7 @@ func (p *parser) GetStruct(structName string) (*generator.ParsedStruct, error) {
 		return nil, fmt.Errorf("struct not found: %q", structName)
 	}
 
-	parsed.Methods = parseMethods(p.pkg, structName)
+	parsed.Methods = parseMethods(pkg, structName)
 	return parsed, nil
 }
 
@@ -139,14 +149,15 @@ func parseMethods(pkg *packages.Package, structName string) generator.Methods {
 	return result
 }
 
-func (p *parser) GetFunctions() (generator.ParsedFunctions, generator.Imports, error) {
-	if p.pkg == nil {
-		return nil, nil, fmt.Errorf("load package first")
+func (p *parser) GetFunctions(importPath string) (generator.ParsedFunctions, generator.Imports, error) {
+	pkg, err := p.getPackage(importPath)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	funcs := generator.ParsedFunctions{}
 	imports := generator.Imports{}
-	for _, f := range p.pkg.Syntax {
+	for _, f := range pkg.Syntax {
 		for _, d := range f.Decls {
 			funcDecl, isFunc := d.(*ast.FuncDecl)
 			if !isFunc {
@@ -156,7 +167,7 @@ func (p *parser) GetFunctions() (generator.ParsedFunctions, generator.Imports, e
 				continue
 			}
 			// TODO: it's entire function, not just body
-			funcBody, err := getSource(p.pkg, funcDecl.Pos(), funcDecl.Body.End())
+			funcBody, err := getSource(pkg, funcDecl.Pos(), funcDecl.Body.End())
 			if err != nil {
 				return nil, nil, err
 			}

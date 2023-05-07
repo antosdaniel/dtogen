@@ -75,14 +75,24 @@ func getInput() (*generator.Input, error) {
 		return nil, fmt.Errorf("dst: %w", err)
 	}
 
+	outPkgPath := getOutPkgPath(*out)
+	if outPkgPath == "" {
+		// Fallback to current directory.
+		outPkgPath, err = os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("could not get current directory: %w", err)
+		}
+	}
+
 	return &generator.Input{
-		Src: srcInput,
-		Dst: dstInput,
+		Src:           srcInput,
+		Dst:           dstInput,
+		OutputPkgPath: outPkgPath,
 	}, nil
 }
 
-func getTypeInput(in string) (generator.TypeInput, error) {
-	parts := strings.Split(in, ".")
+func getTypeInput(input string) (generator.TypeInput, error) {
+	parts := strings.Split(input, ".")
 	if len(parts) < 2 {
 		return generator.TypeInput{}, fmt.Errorf("requires \"<import path>.<type>\" pattern")
 	}
@@ -92,6 +102,14 @@ func getTypeInput(in string) (generator.TypeInput, error) {
 		ImportPath: strings.Join(parts[0:len(parts)-1], "."),
 		Type:       parts[len(parts)-1],
 	}, nil
+}
+
+func getOutPkgPath(outputFilePath string) string {
+	parts := strings.Split(*out, "/")
+	if len(parts) <= 1 {
+		return outputFilePath
+	}
+	return strings.Join(parts[0:len(parts)-1], "/")
 }
 
 func saveToFile(content string) error {

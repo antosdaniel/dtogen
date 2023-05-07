@@ -82,6 +82,10 @@ func (p Package) ToImport() Import {
 	}
 }
 
+func (p Package) Name() string {
+	return p.name
+}
+
 type ParsedFunctions []ParsedFunction
 
 type ParsedFunction struct {

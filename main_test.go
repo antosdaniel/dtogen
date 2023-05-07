@@ -12,6 +12,7 @@ func Test_getInput(t *testing.T) {
 	type args struct {
 		src string
 		dst string
+		out string
 	}
 	tests := []struct {
 		name string
@@ -56,6 +57,7 @@ func Test_getInput(t *testing.T) {
 			args: args{
 				src: "./src/path.type,pkg/src.type,github.com/pkg.type",
 				dst: "dst.type",
+				out: "./path/out.go",
 			},
 			want: &generator.Input{
 				Src: []generator.TypeInput{
@@ -76,6 +78,7 @@ func Test_getInput(t *testing.T) {
 					ImportPath: "dst",
 					Type:       "type",
 				},
+				OutputPkgPath: "./path",
 			},
 			err: nil,
 		},
@@ -84,6 +87,7 @@ func Test_getInput(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			*src = tt.args.src
 			*dst = tt.args.dst
+			*out = tt.args.out
 			result, err := getInput()
 
 			if tt.err != nil {

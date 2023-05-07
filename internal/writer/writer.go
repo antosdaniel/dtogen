@@ -3,7 +3,6 @@ package writer
 import (
 	"fmt"
 	"go/ast"
-	"sort"
 	"strings"
 
 	"github.com/antosdaniel/dtogen/internal/generator"
@@ -71,6 +70,7 @@ func (w *writer) WriteEmptyLine() {
 
 func (w *writer) WritePackage(pkg string) {
 	w.WriteLine(fmt.Sprintf("package %s", pkg))
+	w.WriteEmptyLine()
 }
 
 func (w *writer) WriteImports(imports generator.Imports) {
@@ -80,7 +80,7 @@ func (w *writer) WriteImports(imports generator.Imports) {
 
 	w.WriteLine("import (")
 	w.In()
-	for _, i := range sortImports(imports) {
+	for _, i := range imports {
 		if i.Alias() != "" {
 			w.WriteLine(fmt.Sprintf("%s %q", i.Alias(), i.Path()))
 		} else {
@@ -89,48 +89,7 @@ func (w *writer) WriteImports(imports generator.Imports) {
 	}
 	w.Out()
 	w.WriteLine(")")
-}
-
-func sortImports(imports generator.Imports) generator.Imports {
-	sort.Slice(imports, func(i, j int) bool {
-		// First sort by path A-Z
-		if imports[i].Path() != imports[j].Path() {
-			return imports[i].Path() < imports[j].Path()
-		}
-
-		// Then sort by aliases A-Z
-		return imports[i].Alias() < imports[j].Alias()
-	})
-
-	return imports
-}
-
-func (w *writer) WriteStruct(structName string, fields generator.Fields) {
-	w.WriteLine(fmt.Sprintf("type %s struct {", structName))
-	w.In()
-	col := longestFieldNameLength(fields) + 1
-	for _, f := range fields {
-		fieldType := f.OverrideTypeTo()
-		if fieldType == "" {
-			fieldType = writeType(f.Type())
-		}
-		space := strings.Repeat(" ", col-len(f.DesiredName()))
-		w.WriteLine(f.DesiredName() + space + fieldType)
-	}
-	w.Out()
-	w.WriteLine("}")
-}
-
-func longestFieldNameLength(fields generator.Fields) int {
-	result := 0
-	for _, f := range fields {
-		l := len(f.DesiredName())
-		if l > result {
-			result = l
-		}
-	}
-
-	return result
+	w.WriteEmptyLine()
 }
 
 func writeType(fieldType ast.Expr) string {
@@ -148,60 +107,49 @@ func writeType(fieldType ast.Expr) string {
 		m := fieldType.(*ast.MapType)
 		return "map[" + writeType(m.Key) + "]" + writeType(m.Value)
 	default:
-		return "<unsupported type>" // TODO
+		return "<unsupported type>"
 	}
 }
 
-func (w *writer) WriteMapper(mapper generator.Mapper) {
-	w.WriteLine(fmt.Sprintf(
-		"func New%s(src %s.%s) %s {",
-		mapper.DestinationTypeName,
-		mapper.SourceImportName,
-		mapper.SourceTypeName,
-		mapper.DestinationTypeName,
-	))
+func (w *writer) WriteMapper(mapper generator.Mapper, outputPkg string) {
+	funcName := "To" + strings.ToUpper(mapper.Dst().TypeName()[:1]) + mapper.Dst().TypeName()[1:]
+	funcArgs := mapperArgs(mapper, outputPkg)
+	returnType := structType(mapper.Dst(), outputPkg)
+	w.WriteLine(fmt.Sprintf("func %s(%s) %s {", funcName, funcArgs, returnType))
 	w.In()
-	w.WriteLine(fmt.Sprintf("return %s{", mapper.DestinationTypeName))
+	w.WriteLine(fmt.Sprintf("return %s{", returnType))
 	w.In()
-	col := longestMappingDestinationLength(mapper.Mappings) + 1
-	for _, m := range mapper.Mappings {
-		space := strings.Repeat(" ", col-len(m.Destination()))
-		w.WriteLine(fmt.Sprintf("%s:%s%s,", m.Destination(), space, mappingSource(m)))
+	for _, m := range mapper.Mappings() {
+		src := mappingSrc(m.Src())
+		w.WriteLine(fmt.Sprintf("%s: src.%s,", m.DstField(), src))
 	}
 	w.Out()
 	w.WriteLine("}")
 	w.Out()
 	w.WriteLine("}")
-
-	// TODO: Helpers should be handled in separate method
-	for _, h := range mapper.Helpers {
-		w.WriteEmptyLine()
-		w.WriteLine(h.Code())
-	}
 }
 
-func mappingSource(m generator.Mapping) string {
-	if m.IsFunction() {
-		return m.Source() + "(src." + m.Field() + ")"
-	}
-	if m.IsField() {
-		return "src." + m.Source()
-	}
-	if m.IsMethod() {
-		return "src." + m.Source() + "()"
+func mapperArgs(mapper generator.Mapper, outputPkg string) string {
+	src := mapper.Src()
+	if len(src) <= 1 {
+		return fmt.Sprintf("src %s", structType(src[0], outputPkg))
 	}
 
-	return generator.HandwrittenMapperName(m.Source()) + "(src." + m.Field() + ")"
+	return "" // TODO: handle later
 }
 
-func longestMappingDestinationLength(mappings generator.Mappings) int {
-	result := 0
-	for _, m := range mappings {
-		l := len(m.Destination())
-		if l > result {
-			result = l
-		}
+func structType(ms generator.MappedStruct, outputPkg string) string {
+	if outputPkg == ms.Pkg().Name() {
+		return ms.TypeName()
 	}
+	return fmt.Sprintf("%s.%s", ms.Pkg().Name(), ms.TypeName())
+}
 
-	return result
+func mappingSrc(src generator.MappingSrc) string {
+	switch src.(type) {
+	case generator.MappingSrcField:
+		return src.(generator.MappingSrcField).FieldName()
+	default:
+		return "<unsupported>"
+	}
 }
