@@ -5,7 +5,7 @@ import (
 	"go/ast"
 	"strings"
 
-	"github.com/antosdaniel/dtogen/internal/generator"
+	"github.com/antosdaniel/mappergen/internal/generator"
 	"golang.org/x/tools/imports"
 )
 

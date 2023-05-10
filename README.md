@@ -1,11 +1,11 @@
-# dtogen [![Tests](https://github.com/antosdaniel/dtogen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions) [![Coverage](https://coveralls.io/repos/github/antosdaniel/dtogen/badge.svg)](https://coveralls.io/github/antosdaniel/dtogen) [![Go Report Card](https://goreportcard.com/badge/github.com/antosdaniel/dtogen)](https://goreportcard.com/report/github.com/antosdaniel/dtogen) [![Security](https://github.com/antosdaniel/dtogen/actions/workflows/security.yml/badge.svg)](https://github.com/antosdaniel/dtogen/actions)
+# dtogen [![Tests](https://github.com/antosdaniel/mappergen/actions/workflows/test.yml/badge.svg)](https://github.com/antosdaniel/mappergen/actions) [![Coverage](https://coveralls.io/repos/github/antosdaniel/dtogen/badge.svg)](https://coveralls.io/github/antosdaniel/dtogen) [![Go Report Card](https://goreportcard.com/badge/github.com/antosdaniel/mappergen)](https://goreportcard.com/report/github.com/antosdaniel/mappergen) [![Security](https://github.com/antosdaniel/mappergen/actions/workflows/security.yml/badge.svg)](https://github.com/antosdaniel/mappergen/actions)
 
 Generate DTOs with mappers based on existing Go types.
 
 ## Install
 
 ```sh
-go install github.com/antosdaniel/dtogen/cmd/godtogen
+go install github.com/antosdaniel/mappergen/cmd/godtogen
 ```
 
 ## Usage
@@ -79,8 +79,8 @@ package dto
 import (
 	"time"
 
-	"github.com/antosdaniel/dtogen/test/testdata/_misc"
-	"github.com/antosdaniel/dtogen/test/testdata/struct_mapper_with_getters"
+	"github.com/antosdaniel/mappergen/test/testdata/_misc"
+	"github.com/antosdaniel/mappergen/test/testdata/struct_mapper_with_getters"
 )
 
 type Input struct {

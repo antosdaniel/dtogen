@@ -4,9 +4,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/antosdaniel/dtogen/internal/generator"
-	"github.com/antosdaniel/dtogen/internal/parser"
-	"github.com/antosdaniel/dtogen/internal/writer"
+	"github.com/antosdaniel/mappergen/internal/generator"
+	"github.com/antosdaniel/mappergen/internal/parser"
+	"github.com/antosdaniel/mappergen/internal/writer"
 	"github.com/stretchr/testify/assert"
 )
 

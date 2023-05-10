@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/antosdaniel/dtogen/internal/generator"
+	"github.com/antosdaniel/mappergen/internal/generator"
 	"github.com/stretchr/testify/assert"
 )
 

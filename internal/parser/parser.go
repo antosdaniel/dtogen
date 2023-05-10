@@ -6,7 +6,7 @@ import (
 	"go/token"
 	"os"
 
-	"github.com/antosdaniel/dtogen/internal/generator"
+	"github.com/antosdaniel/mappergen/internal/generator"
 	"golang.org/x/tools/go/packages"
 )
 

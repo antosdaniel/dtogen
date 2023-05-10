@@ -1,4 +1,4 @@
-module github.com/antosdaniel/dtogen
+module github.com/antosdaniel/mappergen
 
 go 1.20
 
