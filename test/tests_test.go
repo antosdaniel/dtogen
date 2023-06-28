@@ -34,6 +34,23 @@ func TestScenarios(t *testing.T) {
 			expected: "./testdata/simple_struct/mapper.go",
 		},
 		{
+			name: "nested_types",
+			input: generator.Input{
+				Src: []generator.TypeInput{
+					{
+						ImportPath: "./testdata/nested_types/src",
+						Type:       "Payslip",
+					},
+				},
+				Dst: generator.TypeInput{
+					ImportPath: "./testdata/nested_types/dst",
+					Type:       "Payslip",
+				},
+				OutputPkgPath: "./testdata/nested_types",
+			},
+			expected: "./testdata/nested_types/mapper.go",
+		},
+		{
 			name: "import_paths",
 			input: generator.Input{
 				Src: []generator.TypeInput{
